@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('candidatos.postular') }}" class="btn btn-secondary btn-sm">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    Portal público
+  </a>
+{% endblock %}
+
+{% block content %}
+<!-- Stat cards -->
+<div class="grid grid-4" style="margin-bottom:24px;">
+  <div class="stat-card stat-green">
+    <div class="stat-label">Vacantes activas</div>
+    <div class="stat-value">{{ total_vacantes }}</div>
+    <div class="stat-sub">publicadas</div>
+  </div>
+  <div class="stat-card stat-blue">
+    <div class="stat-label">Total candidatos</div>
+    <div class="stat-value">{{ total_candidatos }}</div>
+    <div class="stat-sub">registrados</div>
+  </div>
+  <div class="stat-card stat-yellow">
+    <div class="stat-label">En proceso</div>
+    <div class="stat-value">{{ en_proceso }}</div>
+    <div class="stat-sub">prefiltro · evaluación · entrevista</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Inducción completa</div>
+    <div class="stat-value" style="color:#d8b4fe;">{{ induccion_completa }}</div>
+    <div class="stat-sub">módulos aprobados</div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:24px;">
+  <!-- Pipeline -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Pipeline de selección</span>
+      <a href="{{ url_for('candidatos.index') }}" class="btn btn-secondary btn-sm">Ver todos</a>
+    </div>
+    <div class="pipeline">
+      {% set colors = {'recibido':'#64748b','prefiltro':'#3b82f6','evaluacion':'#f59e0b','entrevista':'#8b5cf6','seleccionado':'#22c55e','rechazado':'#ef4444'} %}
+      {% for estado, count in pipeline.items() %}
+      <div class="pipeline-col">
+        <div class="pipeline-label" style="color:{{ colors.get(estado,'#64748b') }}">{{ estado }}</div>
+        <div class="pipeline-count" style="color:{{ colors.get(estado,'#64748b') }}">{{ count }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Fuentes -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Fuentes de candidatos</span>
+    </div>
+    {% set total = fuentes.values()|sum %}
+    {% for fuente, count in fuentes.items() %}
+    {% set pct = ((count / total * 100)|int) if total > 0 else 0 %}
+    <div style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:12px;">
+        <span style="text-transform:uppercase; letter-spacing:.5px; color:var(--text-dim);">{{ fuente }}</span>
+        <span class="mono" style="color:var(--text);">{{ count }} <span style="color:var(--text-muted);">({{ pct }}%)</span></span>
+      </div>
+      <div class="progress">
+        <div class="progress-bar {% if fuente == 'spe' %}blue{% endif %}" style="width:{{ pct }}%"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Log de actividad -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Actividad reciente</span>
+    <a href="{{ url_for('admin.auditoria') }}" class="btn btn-secondary btn-sm">
+        Log completo
+    </a>
+  </div>
+  {% for log in logs_recientes %}
+  <div class="log-entry">
+    <div class="log-dot {{ 'error' if log.resultado == 'error' else ('warn' if log.resultado == 'denegado' else 'ok') }}"></div>
+    <span class="log-time">{{ log.fecha.strftime('%d/%m %H:%M') }}</span>
+    <span class="log-action">{{ log.accion }}</span>
+    <span class="log-desc">{{ log.descripcion or '' }}</span>
+    {% if log.usuario %}
+    <span style="color:var(--text-muted); font-size:11px; flex-shrink:0;">{{ log.usuario.nombre.split()[0] }}</span>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="empty-state"><p>No hay actividad registrada.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

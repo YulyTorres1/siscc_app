@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SISCC — Sistema Integral de Selección y Concientización</title>
+<style>
+  :root {
+    --bg-primary: #070B0F;
+    --bg-secondary: #0F1419;
+    --bg-card: #141C24;
+    --bg-card-hover: #1A2532;
+    --border: #1E2D3D;
+    --border-bright: #2A3F55;
+    --green: #22C55E;
+    --green-dim: #16A34A;
+    --green-glow: rgba(34,197,94,0.15);
+    --blue: #3B82F6;
+    --blue-dim: #2563EB;
+    --blue-glow: rgba(59,130,246,0.12);
+    --amber: #F59E0B;
+    --red: #EF4444;
+    --text-primary: #E2E8F0;
+    --text-secondary: #94A3B8;
+    --text-dim: #475569;
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --radius: 8px;
+    --sidebar-w: 240px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    height: 52px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--green), var(--blue));
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 900; color: #fff;
+    font-family: var(--font-mono);
+  }
+  .logo-text {
+    font-family: var(--font-mono);
+    font-size: 13px; font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.05em;
+  }
+  .logo-text span { color: var(--green); }
+
+  .topbar-right {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .top-badge {
+    font-size: 10px; font-family: var(--font-mono);
+    color: var(--green); background: var(--green-glow);
+    border: 1px solid var(--green-dim);
+    padding: 3px 8px; border-radius: 4px;
+    letter-spacing: 0.08em;
+  }
+  .top-role {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .top-role:hover { border-color: var(--border-bright); }
+  .top-role-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .top-role-name { font-size: 12px; color: var(--text-secondary); }
+
+  /* ─── LAYOUT ─── */
+  .layout {
+    display: flex;
+    margin-top: 52px;
+    min-height: calc(100vh - 52px);
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 52px; left: 0; bottom: 0;
+    display: flex; flex-direction: column;
+    padding: 16px 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    padding: 0 12px;
+    margin-bottom: 24px;
+  }
+  .sidebar-section-label {
+    font-size: 9px; font-family: var(--font-mono);
+    color: var(--text-dim);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 0 8px;
+    margin-bottom: 6px;
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: var(--radius);
+    cursor: pointer; transition: all .15s;
+    font-size: 13px; color: var(--text-secondary);
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+  }
+  .sidebar-item:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
+  .sidebar-item.active {
+    background: var(--green-glow);
+    color: var(--green);
+    border-color: rgba(34,197,94,0.25);
+    font-weight: 600;
+  }
+  .sidebar-item .icon { font-size: 14px; width: 18px; text-align: center; }
+  .sidebar-item .badge {
+    margin-left: auto;
+    font-size: 9px; font-family: var(--font-mono);
+    background: var(--green); color: #000;
+    border-radius: 10px; padding: 1px 6px;
+    font-weight: 700;
+  }
+  .sidebar-item .badge-amber {
+    background: var(--amber); color: #000;
+  }
+
+  /* ─── MAIN ─── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 28px 32px;
+    min-height: 100%;
+  }
+
+  /* ─── VIEWS ─── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ─── PAGE HEADER ─── */
+  .page-header {
+    display: flex; align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .page-header-left {}
+  .page-eyebrow {
+    font-size: 10px; font-family: var(--font-mono);
+    color: var(--green); letter-spacing: 0.12em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .page-title {
+    font-size: 24px; font-weight: 700;
+    color: var(--text-primary); line-height: 1.2;
+  }
+  .page-subtitle {
+    font-size: 13px; color: var(--text-secondary); margin-top: 4px;
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: none; transition: all .15s; white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--green); color: #000;
+  }
+  .btn-primary:hover { background: #16A34A; }
+  .btn-secondary {
+    background: var(--bg-card); color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--border-bright); }
+  .btn-blue {
+    background: var(--blue); color: #fff;
+  }
+  .btn-blue:hover { background: var(--blue-dim); }
+  .btn-danger {
+    background: rgba(239,68,68,0.12); color: var(--red);
+    border: 1px solid rgba(239,68,68,0.25);
+  }
+
+  /* ─── STAT CARDS ─── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    transition: border-color .2s;
+  }
+  .stat-card:hover { border-color: var(--border-bright); }
+  .stat-label {
+    font-size: 10px; font-family: var(--font-mono);
+    color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 10px;
+  }
+  .stat-value {
+    font-size: 28px; font-weight: 800;
+    font-family: var(--font-mono);
+    line-height: 1;
+  }
+  .stat-value.green { color: var(--green); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-value.amber { color: var(--amber); }
+  .stat-value.red { color: var(--red); }
+  .stat-sub {
+    font-size: 11px; color: var(--text-dim); margin-top: 4px;
+  }
+  .stat-trend {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-family: var(--font-mono);
+    margin-top: 6px;
+  }
+  .trend-up { color: var(--green); }
+  .trend-down { color: var(--red); }
+
+  /* ─── GRID CARDS ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-primary);
+  }
+  .card-actions { display: flex; gap: 8px; }
+
+  /* ─── TABLE ─── */
+  .table-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 10px; font-family: var(--font-mono);
+    color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    white-space: nowrap;
+  }
+  td {
+    padding: 12px 16px;
+    font-size: 13px; color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-card-hover); color: var(--text-primary); }
+
+  /* ─── STATUS PILLS ─── */
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+    font-family: var(--font-mono); letter-spacing: 0.04em;
+  }
+  .pill::before { content: ''; width: 5px; height: 5px; border-radius: 50%; }
+  .pill-green { background: var(--green-glow); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+  .pill-green::before { background: var(--green); }
+  .pill-blue { background: var(--blue-glow); color: var(--blue); border: 1px solid rgba(59,130,246,.3); }
+  .pill-blue::before { background: var(--blue); }
+  .pill-amber { background: rgba(245,158,11,.1); color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
+  .pill-amber::before { background: var(--amber); }
+  .pill-red { background: rgba(239,68,68,.1); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+  .pill-red::before { background: var(--red); }
+  .pill-gray { background: rgba(100,116,139,.1); color: var(--text-dim); border: 1px solid rgba(100,116,139,.2); }
+  .pill-gray::before { background: var(--text-dim); }
+
+  /* ─── SCORE BAR ─── */
+  .score-bar { margin-top: 8px; }
+  .score-bar-bg {
+    height: 4px; background: var(--border);
+    border-radius: 2px; overflow: hidden;
+  }
+  .score-bar-fill { height: 100%; border-radius: 2px; transition: width .5s; }
+
+  /* ─── PROGRESS ─── */
+  .progress-ring-wrap {
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px 0;
+  }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+  .progress-bar-row { margin-bottom: 12px; }
+  .progress-bar-bg {
+    height: 6px; background: var(--border);
+    border-radius: 3px; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 3px;
+    transition: width .6s;
+  }
+
+  /* ─── FORM ─── */
+  .form-grid { display: grid; gap: 16px; }
+  .form-grid-2 { grid-template-columns: 1fr 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label {
+    font-size: 11px; font-weight: 600;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .form-input {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 9px 12px;
+    font-size: 13px; color: var(--text-primary);
+    font-family: var(--font-sans);
+    outline: none; transition: border-color .15s;
+    width: 100%;
+  }
+  .form-input:focus { border-color: var(--green); }
+  .form-input::placeholder { color: var(--text-dim); }
+  select.form-input { cursor: pointer; }
+  textarea.form-input { resize: vertical; min-height: 80px; }
+
+  /* ─── UPLOAD ─── */
+  .upload-zone {
+    border: 2px dashed var(--border-bright);
+    border-radius: var(--radius);
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    background: var(--bg-secondary);
+  }
+  .upload-zone:hover {
+    border-color: var(--green);
+    background: var(--green-glow);
+  }
+  .upload-icon { font-size: 28px; margin-bottom: 10px; }
+  .upload-text { font-size: 13px; color: var(--text-secondary); }
+  .upload-subtext { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ─── TIMELINE ─── */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 8px; top: 4px; bottom: 0;
+    width: 1px; background: var(--border);
+  }
+  .timeline-item {
+    position: relative; margin-bottom: 20px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute; left: -20px; top: 4px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border-bright);
+    border: 2px solid var(--bg-secondary);
+  }
+  .timeline-item.done::before { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .timeline-item.active::before { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+  .timeline-time { font-size: 10px; font-family: var(--font-mono); color: var(--text-dim); }
+  .timeline-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-top: 2px; }
+  .timeline-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ─── MODULE CARDS ─── */
+  .module-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px; cursor: pointer;
+    transition: all .2s;
+    position: relative; overflow: hidden;
+  }
+  .module-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-1px);
+  }
+  .module-card.locked { opacity: 0.5; cursor: not-allowed; }
+  .module-card.completed { border-color: rgba(34,197,94,.3); }
+  .module-card.completed::after {
+    content: '✓';
+    position: absolute; top: 12px; right: 12px;
+    width: 20px; height: 20px;
+    background: var(--green); color: #000;
+    border-radius: 50%; font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+  }
+  .module-number {
+    font-size: 10px; font-family: var(--font-mono);
+    color: var(--text-dim); margin-bottom: 8px;
+  }
+  .module-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+  .module-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .module-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+  .module-duration { font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); }
+
+  /* ─── SECURITY SCORE ─── */
+  .sec-score-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+  }
+  .sec-score-ring {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    position: relative;
+  }
+  .sec-score-ring svg { position: absolute; top: 0; left: 0; }
+  .sec-score-inner {
+    font-size: 28px; font-weight: 900;
+    font-family: var(--font-mono);
+    color: var(--green);
+    z-index: 1;
+  }
+  .sec-score-label {
+    font-size: 11px; color: var(--text-dim);
+    font-family: var(--font-mono); letter-spacing: 0.08em;
+  }
+
+  /* ─── ALERT ─── */
+  .alert {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 16px; border-radius: var(--radius);
+    margin-bottom: 16px; font-size: 13px;
+  }
+  .alert-warn { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.25); color: var(--amber); }
+  .alert-info { background: var(--blue-glow); border: 1px solid rgba(59,130,246,.25); color: var(--blue); }
+  .alert-success { background: var(--green-glow); border: 1px solid rgba(34,197,94,.25); color: var(--green); }
+  .alert-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+  .alert-text { color: var(--text-secondary); }
+  .alert-text strong { color: var(--text-primary); }
+
+  /* ─── TAG ─── */
+  .tag {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-family: var(--font-mono);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    margin: 2px;
+  }
+
+  /* ─── SCORE MINI ─── */
+  .score-mini {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .score-mini-num {
+    font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+    min-width: 28px; text-align: right;
+  }
+  .score-mini-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .score-mini-fill { height: 100%; border-radius: 2px; }
+
+  /* ─── VACANCY CARD ─── */
+  .vacancy-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 16px;
+    transition: border-color .2s; cursor: pointer;
+  }
+  .vacancy-card:hover { border-color: var(--border-bright); }
+  .vacancy-icon {
+    width: 40px; height: 40px; border-radius: var(--radius);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .vacancy-info { flex: 1; }
+  .vacancy-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .vacancy-meta { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+  .vacancy-tags { margin-top: 6px; }
+  .vacancy-action { flex-shrink: 0; }
+
+  /* ─── CANDIDATE ROW ─── */
+  .cand-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #000;
+    flex-shrink: 0;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+  /* ─── CHECKBOX ─── */
+  .check-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-box {
+    width: 16px; height: 16px; border-radius: 3px;
+    border: 2px solid var(--border-bright);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; cursor: pointer; transition: all .15s;
+  }
+  .check-box.checked { background: var(--green); border-color: var(--green); }
+  .check-label { font-size: 13px; color: var(--text-secondary); flex: 1; }
+
+  /* ─── LOG ─── */
+  .log-row {
+    display: flex; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border); font-size: 12px;
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-time { font-family: var(--font-mono); color: var(--text-dim); white-space: nowrap; min-width: 130px; }
+  .log-event { color: var(--text-secondary); flex: 1; }
+  .log-user { font-family: var(--font-mono); color: var(--blue); white-space: nowrap; }
+
+  /* ─── NOTIFICATION ─── */
+  .notif-dot {
+    position: absolute; top: 2px; right: 2px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--red); border: 1px solid var(--bg-secondary);
+  }
+  .notif-wrap { position: relative; }
+
+  /* ─── MODAL OVERLAY ─── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    padding: 28px 32px;
+    width: 520px; max-width: 95vw;
+    max-height: 85vh; overflow-y: auto;
+  }
+  .modal-title {
+    font-size: 18px; font-weight: 700;
+    color: var(--text-primary); margin-bottom: 20px;
+  }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+  .modal-close {
+    position: absolute; top: 20px; right: 20px;
+    background: none; border: none; color: var(--text-dim);
+    cursor: pointer; font-size: 20px; line-height: 1;
+  }
+
+  /* ─── QUIZ ─── */
+  .quiz-option {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px; margin-bottom: 8px;
+    cursor: pointer; font-size: 13px; color: var(--text-secondary);
+    transition: all .15s; display: flex; align-items: center; gap: 10px;
+  }
+  .quiz-option:hover { border-color: var(--blue); color: var(--text-primary); }
+  .quiz-option.selected { border-color: var(--blue); background: var(--blue-glow); color: var(--text-primary); }
+  .quiz-option.correct { border-color: var(--green); background: var(--green-glow); color: var(--green); }
+  .quiz-option.wrong { border-color: var(--red); background: rgba(239,68,68,.08); color: var(--red); }
+  .quiz-letter {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--bg-card); border: 1px solid var(--border-bright);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-family: var(--font-mono); font-weight: 700;
+    flex-shrink: 0; color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-icon">S</div>
+    <div class="logo-text">SIS<span>CC</span></div>
+    <span style="color:var(--text-dim); font-size:11px; margin-left:4px; font-family:var(--font-mono)">v2.4.1</span>
+  </div>
+  <div class="topbar-right">
+    <span class="top-badge">🔒 AES-256 ACTIVO</span>
+    <div class="top-role" onclick="showRoleModal()">
+      <div class="top-role-dot"></div>
+      <span class="top-role-name" id="role-label">Admin RR.HH.</span>
+      <span style="color:var(--text-dim); font-size:11px; margin-left:4px;">▾</span>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Principal</div>
+    <div class="sidebar-item active" onclick="showView('dashboard', this)">
+      <span class="icon">◈</span> Dashboard
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Reclutamiento</div>
+    <div class="sidebar-item" onclick="showView('vacantes', this)">
+      <span class="icon">📋</span> Vacantes
+      <span class="badge">4</span>
+    </div>
+    <div class="sidebar-item" onclick="showView('candidatos', this)">
+      <span class="icon">👤</span> Candidatos
+      <span class="badge">12</span>
+    </div>
+    <div class="sidebar-item" onclick="showView('portal', this)">
+      <span class="icon">🌐</span> Portal Público
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Seguridad</div>
+    <div class="sidebar-item" onclick="showView('induccion', this)">
+      <span class="icon">🎓</span> Módulos Inducción
+      <span class="badge badge-amber">3</span>
+    </div>
+    <div class="sidebar-item" onclick="showView('boveda', this)">
+      <span class="icon">🗄️</span> Bóveda de Datos
+    </div>
+    <div class="sidebar-item" onclick="showView('auditoria', this)">
+      <span class="icon">📝</span> Log de Auditoría
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Integraciones</div>
+    <div class="sidebar-item" onclick="showView('api', this)">
+      <span class="icon">⚡</span> APIs (SPE / SENA)
+    </div>
+    <div class="sidebar-item" onclick="showView('reportes', this)">
+      <span class="icon">📊</span> Reportes
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ─── VIEW: DASHBOARD ─── -->
+  <div class="view active" id="view-dashboard">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">// GTH · VISIÓN GENERAL</div>
+        <div class="page-title">Dashboard de Seguridad</div>
+        <div class="page-subtitle">Estado del sistema en tiempo real</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" onclick="showView('auditoria', null)">Ver Auditoría</button>
+        <button class="btn btn-primary" onclick="showView('candidatos', null)">+ Nuevo Proceso</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Candidatos Activos</div>
+        <div class="stat-value blue">47</div>
+        <div class="stat-sub">en 4 vacantes abiertas</div>
+        <div class="stat-trend trend-up">▲ +8 esta semana</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Módulos Completados</div>
+        <div class="stat-value green">89%</div>
+        <div class="stat-sub">de empleados activos</div>
+        <div class="stat-trend trend-up">▲ +5% vs mes anterior</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cumplimiento Habeas Data</div>
+        <div class="stat-value green">100%</div>
+        <div class="stat-sub">trazabilidad automática</div>
+        <div class="stat-trend trend-up">✓ Ley 1581 activa</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Alertas Pendientes</div>
+        <div class="stat-value amber">3</div>
+        <div class="stat-sub">documentos sin completar</div>
+        <div class="stat-trend trend-down">▲ +1 nueva hoy</div>
+      </div>
+    </div>
+
+    <div class="alert alert-warn">
+      <span class="alert-icon">⚠</span>
+      <div class="alert-text"><strong>3 candidatos</strong> tienen hojas de vida cargadas pero pendientes de escaneo de malware. El sistema retiene el acceso hasta completar la verificación.</div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <!-- Flujo por Etapa -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Embudo de Selección</div>
+          <span class="pill pill-blue">SPE + SENA</span>
+        </div>
+        <div id="funnel-content">
+          <div class="progress-bar-row">
+            <div class="progress-label"><span>📥 Postulaciones recibidas</span><span style="color:var(--text-primary);font-weight:700">47</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:100%;background:var(--blue)"></div></div>
+          </div>
+          <div class="progress-bar-row">
+            <div class="progress-label"><span>✅ Pre-filtro automático</span><span style="color:var(--text-primary);font-weight:700">34</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:72%;background:var(--blue)"></div></div>
+          </div>
+          <div class="progress-bar-row">
+            <div class="progress-label"><span>🧪 En evaluación psicológica</span><span style="color:var(--text-primary);font-weight:700">18</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:38%;background:var(--amber)"></div></div>
+          </div>
+          <div class="progress-bar-row">
+            <div class="progress-label"><span>🏆 Seleccionados</span><span style="color:var(--text-primary);font-weight:700">6</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:12%;background:var(--green)"></div></div>
+          </div>
+          <div class="progress-bar-row">
+            <div class="progress-label"><span>🎓 Inducción completada</span><span style="color:var(--text-primary);font-weight:700">4</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:8%;background:var(--green)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Madurez de Seguridad -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Nivel de Madurez del Equipo</div>
+          <span class="pill pill-green">Activo</span>
+        </div>
+        <div class="score-mini" style="margin-bottom:12px">
+          <span class="score-mini-num" style="color:var(--amber)">62%</span>
+          <div class="score-mini-bar"><div class="score-mini-fill" style="width:62%;background:var(--amber)"></div></div>
+          <span style="font-size:11px;color:var(--text-dim);white-space:nowrap">Phishing</span>
+        </div>
+        <div class="score-mini" style="margin-bottom:12px">
+          <span class="score-mini-num" style="color:var(--green)">88%</span>
+          <div class="score-mini-bar"><div class="score-mini-fill" style="width:88%;background:var(--green)"></div></div>
+          <span style="font-size:11px;color:var(--text-dim);white-space:nowrap">Contraseñas</span>
+        </div>
+        <div class="score-mini" style="margin-bottom:12px">
+          <span class="score-mini-num" style="color:var(--green)">94%</span>
+          <div class="score-mini-bar"><div class="score-mini-fill" style="width:94%;background:var(--green)"></div></div>
+          <span style="font-size:11px;color:var(--text-dim);white-space:nowrap">Manejo Datos</span>
+        </div>
+        <div class="score-mini" style="margin-bottom:12px">
+          <span class="score-mini-num" style="color:var(--red)">41%</span>
+          <div class="score-mini-bar"><div class="score-mini-fill" style="width:41%;background:var(--red)"></div></div>
+          <span style="font-size:11px;color:var(--text-dim);white-space:nowrap">Ing. Social</span>
+        </div>
+        <div class="score-mini">
+          <span class="score-mini-num" style="color:var(--blue)">76%</span>
+          <div class="score-mini-bar"><div class="score-mini-fill" style="width:76%;background:var(--blue)"></div></div>
+          <span style="font-size:11px;color:var(--text-dim);white-space:nowrap">Dispositivos</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Log -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Actividad Reciente</div>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="showView('auditoria', null)">Ver completo</button>
+      </div>
+      <div class="log-row">
+        <div class="log-time">09/06/2026 10:41</div>
+        <div class="log-event">HV recibida y escaneada (sin malware) — Sebastián Torres</div>
+        <div class="log-user">sistema</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">09/06/2026 09:15</div>
+        <div class="log-event">Módulo "Phishing Avanzado" completado — Laura Gómez</div>
+        <div class="log-user">lgomez</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">09/06/2026 08:50</div>
+        <div class="log-event">Vacante sincronizada con SPE API — Backend Senior</div>
+        <div class="log-user">hrmanager</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">08/06/2026 17:30</div>
+        <div class="log-event">Acceso a expediente de candidato — rol: Psicólogo</div>
+        <div class="log-user">cpsicologia</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIEW: VACANTES ─── -->
+  <div class="view" id="view-vacantes">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">// RECLUTAMIENTO · PILAR 1</div>
+        <div class="page-title">Gestión de Vacantes</div>
+        <div class="page-subtitle">Publicadas en Portal + sincronizadas con SPE / SENA</div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('modal-vacancy')">+ Nueva Vacante</button>
+    </div>
+
+    <div class="alert alert-info">
+      <span class="alert-icon">⚡</span>
+      <div class="alert-text"><strong>API REST activa:</strong> Las vacantes publicadas aquí se sincronizan automáticamente con el Servicio Público de Empleo y el SENA cada 30 minutos.</div>
+    </div>
+
+    <div class="vacancy-card">
+      <div class="vacancy-icon">💻</div>
+      <div class="vacancy-info">
+        <div class="vacancy-title">Desarrollador Backend Senior</div>
+        <div class="vacancy-meta">Ingeniería · Bogotá · Remoto | 14 candidatos</div>
+        <div class="vacancy-tags">
+          <span class="tag">Python</span><span class="tag">Django</span><span class="tag">PostgreSQL</span><span class="tag">Docker</span>
+        </div>
+      </div>
+      <div class="vacancy-action" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <span class="pill pill-green">Activa</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px">Ver postulantes</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px">✎ Editar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="vacancy-card">
+      <div class="vacancy-icon">🔐</div>
+      <div class="vacancy-info">
+        <div class="vacancy-title">Analista de Ciberseguridad</div>
+        <div class="vacancy-meta">Seguridad TI · Bogotá | 9 candidatos</div>
+        <div class="vacancy-tags">
+          <span class="tag">SIEM</span><span class="tag">Pentesting</span><span class="tag">ISO 27001</span>
+        </div>
+      </div>
+      <div class="vacancy-action" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <span class="pill pill-green">Activa</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px">Ver postulantes</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px">✎ Editar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="vacancy-card">
+      <div class="vacancy-icon">🧠</div>
+      <div class="vacancy-info">
+        <div class="vacancy-title">Psicólogo Organizacional</div>
+        <div class="vacancy-meta">RR.HH. · Bogotá Presencial | 18 candidatos</div>
+        <div class="vacancy-tags">
+          <span class="tag">Evaluación</span><span class="tag">Selección</span><span class="tag">Bienestar</span>
+        </div>
+      </div>
+      <div class="vacancy-action" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <span class="pill pill-amber">Pausada</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px">Ver postulantes</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px">Reactivar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="vacancy-card">
+      <div class="vacancy-icon">📈</div>
+      <div class="vacancy-info">
+        <div class="vacancy-title">Líder de Proyectos TI</div>
+        <div class="vacancy-meta">Gerencia · Bogotá | 6 candidatos</div>
+        <div class="vacancy-tags">
+          <span class="tag">SCRUM</span><span class="tag">PMI</span><span class="tag">Liderazgo</span>
+        </div>
+      </div>
+      <div class="vacancy-action" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <span class="pill pill-green">Activa</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px">Ver postulantes</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px">✎ Editar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIEW: CANDIDATOS ─── -->
+  <div class="view" id="view-candidatos">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">// SELECCIÓN · PILAR 2</div>
+        <div class="page-title">Candidatos en Proceso</div>
+        <div class="page-subtitle">Documentos cifrados en bóveda · acceso RBAC</div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('modal-candidate')">+ Registrar Candidato</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Candidato</th>
+            <th>Vacante</th>
+            <th>Fuente</th>
+            <th>Score</th>
+            <th>Estado</th>
+            <th>HV / Docs</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="cand-avatar" style="background:#22C55E">ST</div>
+                <div>
+                  <div style="font-weight:600;color:var(--text-primary);font-size:13px">Sebastián Torres</div>
+                  <div style="font-size:11px;color:var(--text-dim)">sebastian.t@gmail.com</div>
+                </div>
+              </div>
+            </td>
+            <td>Backend Senior</td>
+            <td><span class="pill pill-blue">SPE</span></td>
+            <td>
+              <div class="score-mini">
+                <span class="score-mini-num" style="color:var(--green);font-size:12px">87</span>
+                <div class="score-mini-bar"><div class="score-mini-fill" style="width:87%;background:var(--green)"></div></div>
+              </div>
+            </td>
+            <td><span class="pill pill-blue">Entrevista</span></td>
+            <td><span class="pill pill-green">✓ Limpio</span></td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-secondary" style="font-size:11px;padding:4px 9px">Ver Exp.</button>
+                <button class="btn btn-blue" style="font-size:11px;padding:4px 9px">Avanzar</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="cand-avatar" style="background:#3B82F6">LG</div>
+                <div>
+                  <div style="font-weight:600;color:var(--text-primary);font-size:13px">Laura Gómez</div>
+                  <div style="font-size:11px;color:var(--text-dim)">l.gomez@outlook.com</div>
+                </div>
+              </div>
+            </td>
+            <td>Psicólogo Org.</td>
+            <td><span class="pill pill-amber">SENA</span></td>
+            <td>
+              <div class="score-mini">
+                <span class="score-mini-num" style="color:var(--green);font-size:12px">91</span>
+                <div class="score-mini-bar"><div class="score-mini-fill" style="width:91%;background:var(--green)"></div></div>
+              </div>
+            </td>
+            <td><span class="pill pill-amber">Evaluación</span></td>
+            <td><span class="pill pill-green">✓ Limpio</span></td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-secondary" style="font-size:11px;padding:4px 9px">Ver Exp.</button>
+                <button class="btn btn-blue" style="font-size:11px;padding:4px 9px">Avanzar</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="cand-avatar" style="background:#F59E0B">CP</div>
+                <div>
+                  <div style="font-weight:600;color:var(--text-primary);font-size:13px">Carlos Prada</div>
+                  <div style="font-size:11px;color:var(--text-dim)">cprada@proton.me</div>
+                </div>
+              </div>
+            </td>
+            <td>Ciberseguridad</td>
+            <td><span class="pill pill-blue">SPE</span></td>
+            <td>
+              <div class="score-mini">
+                <span class="score-mini-num" style="color:var(--amber);font-size:12px">74</span>
+                <div class="score-mini-bar"><div class="score-mini-fill" style="width:74%;background:var(--amber)"></div></div>
+              </div>
+            </td>
+            <td><span class="pill pill-amber">Pre-filtro</span></td>
+            <td><span class="pill pill-amber">⏳ Escaneando</span></td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-secondary" style="font-size:11px;padding:4px 9px">Ver Exp.</button>
+                <button class="btn btn-secondary" style="font-size:11px;padding:4px 9px;opacity:.5;cursor:not-allowed">Avanzar</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="cand-avatar" style="background:#A855F7">MV</div>
+                <div>
+                  <div style="font-weight:600;color:var(--text-primary);font-size:13px">María Vargas</div>
+                  <div style="font-size:11px;color:var(--text-dim)">mvargas@email.co</div>
+                </div>
+              </div>
+            </td>
+            <td>Líder TI</td>
+            <td><span class="pill pill-gray">Portal</span></td>
+            <td>
+              <div class="score-mini">
+                <span class="score-mini-num" style="color:var(--green);font-size:12px">83</span>
+                <div class="score-mini-bar"><div class="score-mini-fill" style="width:83%;background:var(--green)"></div></div>
+              </div>
+            </td>
+            <td><span class="pill pill-green">Seleccionada</span></td>
+            <td><span class="pill pill-green">✓ Limpio</span></td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-secondary" style="font-size:11px;padding:4px 9px">Ver Exp.</button>
+                <button class="btn btn-primary" style="font-size:11px;padding:4px 9px" onclick="showView('induccion', null)">🎓 Inducción</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── VIEW: PORTAL PÚBLICO ─── -->
+  <div class="view" id="view-portal">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">// PORTAL CANDIDATOS</div>
+        <div class="page-title">Vista: Portal de Postulación</div>
+        <div class="page-subtitle">Así ve el candidato el sistema — recepción segura de HV</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+      <!-- Portal Header -->
+      <div style="background:linear-gradient(135deg,#0A0E13 0%,#0F1E2B 100%);padding:32px 32px 24px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <div class="logo-icon">S</div>
+          <span style="font-family:var(--font-mono);font-size:14px;font-weight:700">SISCC — Portal de Empleo</span>
+          <span class="pill pill-green" style="margin-left:auto">🔒 Conexión segura</span>
+        </div>
+        <div style="font-size:22px;font-weight:800;color:var(--text-primary);margin-bottom:6px">Únete a nuestro equipo</div>
+        <div style="font-size:13px;color:var(--text-secondary)">Tus datos están protegidos bajo cifrado AES-256 y la Ley 1581 de Habeas Data</div>
+      </div>
+
+      <!-- Portal Form Preview -->
+      <div style="padding:28px 32px">
+        <div class="alert alert-success" style="margin-bottom:20px">
+          <span class="alert-icon">ℹ</span>
+          <div class="alert-text">Esta es una <strong>previsualización del formulario</strong> que completan los candidatos. Los datos se almacenan cifrados en la bóveda segura.</div>
+        </div>
+
+        <div style="font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:16px">Formulario de Postulación — Backend Senior</div>
+
+        <div class="form-grid form-grid-2" style="margin-bottom:16px">
+          <div class="form-group">
+            <label class="form-label">Nombre completo *</label>
+            <input class="form-input" placeholder="Sebastián Torres Ruiz" disabled>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Número de documento *</label>
+            <input class="form-input" placeholder="CC 1234567890" disabled>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo electrónico *</label>
+            <input class="form-input" placeholder="candidato@email.com" disabled>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input class="form-input" placeholder="+57 300 000 0000" disabled>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label">Perfil profesional (500 palabras)</label>
+          <textarea class="form-input" placeholder="Describe tu experiencia y motivación…" rows="3" disabled></textarea>
+        </div>
+
+        <div class="upload-zone" style="margin-bottom:20px;cursor:default">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">Cargar Hoja de Vida (.pdf / .docx)</div>
+          <div class="upload-subtext">El archivo se escanea contra malware antes de almacenarse</div>
+          <div style="margin-top:10px">
+            <span class="pill pill-green">✓ Cifrado AES-256</span>
+            <span class="pill pill-blue" style="margin-left:6px">✓ Escaneo automático</span>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
+          <div class="check-row">
+            <div class="check-box checked" style="cursor:default">✓</div>
+            <div class="check-label" style="font-size:12px">Autorizo el tratamiento de mis datos personales conforme a la <strong>Ley 1581 de 2012</strong> (Habeas Data). Puedo solicitar acceso, corrección o supresión en cualquier momento.</div>
+          </div>
+          <div class="check-row">
+            <div class="check-box checked" style="cursor:default">✓</div>
+            <div class="check-label" style="font-size:12px">Entiendo que si soy seleccionado(a), deberé completar el módulo de inducción en ciberseguridad <strong>antes</strong> de recibir credenciales corporativas.</div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:14px;padding:12px" disabled>
+          Enviar Postulación de Forma Segura 🔒
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIEW: INDUCCIÓN ─── -->
+  <div class="view" id="view-induccion">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">// PILAR 3 · EL FIREWALL HUMANO</div>
+        <div class="page-title">Módulos de Inducción en Ciberseguridad</div>
+        <div class="page-subtitle">Las credenciales se liberan al completar el módulo final</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <span class="pill pill-amber" style="padding:8px 14px;font-size:11px">3 empleados pendientes</span>
+      </div>
+    </div>
+
+    <div class="alert alert-warn">
+      <span class="alert-icon">🎓</span>
+      <div class="alert-text"><strong>María Vargas</strong> (Líder TI) completó selección. El sistema ha bloqueado la creación de credenciales corporativas hasta que apruebe los 3 módulos obligatorios.</div>
+    </div>
+
+    <!-- Progress summary -->
+    <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:28px">
+      <div class="stat-card">
+        <div class="stat-label">Módulo Actual</div>
+        <div class="stat-value blue" style="font-size:20px">01/03</div>
+        <div class="stat-sub">Amenazas Digitales</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tiempo estimado</div>
+        <div class="stat-value" style="font-size:20px;color:var(--text-primary)">45 min</div>
+        <div class="stat-sub">total restante</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Certificado digital</div>
+        <div class="stat-value amber" style="font-size:20px">Pendiente</div>
+        <div class="stat-sub">disponible al finalizar</div>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:24px">
+      <div class="module-card" onclick="openModal('modal-quiz')">
+        <div class="module-number">MÓDULO 01 · OBLIGATORIO</div>
+        <div class="module-title">Amenazas Digitales: Phishing y Malware</div>
+        <div class="module-desc">Identifica intentos de engaño, correos fraudulentos y archivos maliciosos en el entorno corporativo.</div>
+        <div class="module-footer">
+          <span class="module-duration">⏱ 20 min</span>
+          <span class="pill pill-blue">En progreso</span>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-number">MÓDULO 02 · OBLIGATORIO</div>
+        <div class="module-title">Gestión de Contraseñas y Autenticación</div>
+        <div class="module-desc">Buenas prácticas para crear, almacenar y rotar contraseñas. Activación de 2FA en servicios corporativos.</div>
+        <div class="module-footer">
+          <span class="module-duration">⏱ 15 min</span>
+          <span class="pill pill-gray">Bloqueado</span>
+        </div>
+      </div>
+
+      <div class="module-card locked">
+        <div class="module-number">MÓDULO 03 · OBLIGATORIO</div>
+        <div class="module-title">Privacidad y Habeas Data en el trabajo</div>
+        <div class="module-desc">Qué información es sensible, cómo manejarla, y las implicaciones legales de la Ley 1581 para el empleado.</div>
+        <div class="module-footer">
+          <span class="module-duration">⏱ 10 min</span>
+          <span class="pill pill-gray">Bloqueado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline empleados en inducción -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Estado por Colaborador</div>
+      </div>
+      <table style="width:100%">
+        <thead>
+          <tr>
+            <th>Colaborador</th>
+            <th>Módulo 01</th>
+            <th>Módulo 02</th>
+            <th>Módulo 03</th>
+            <th>Certificado</th>
+            <th>Acceso red</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600;color:var(--text-primary)">María Vargas</td>
+            <td><span class="pill pill-blue">En progreso</span></td>
+            <td><span class="pill pill-gray">Bloqueado</span></td>
+            <td><span class="pill pill-gray">Bloqueado</span></td>
+            <td><span class="pill pill-amber">Pendiente</span></td>
+            <td><span class="pill pill-red">⛔ Bloqueado</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;color:var(--text-primary)">Sebastián Torres</td>
+            <td><span class="pill pill-green">✓ Aprobado</span></td>
+            <td><span class="pill pill-green">✓ Aprobado</span></td>
+            <td><span class="pill pill-green">✓ Aprobado</span></td>
+            <td><span class="pill pill-green">✓ Emitido</span></td>
+            <td><span class="pill pill-green">✓ Activo</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;color:var(--text-primary)">Laura Gómez</td>
+            <td><span class="pill pill-green">✓ Aprobado</span></td>
+            <td><span class="pill pill-green">✓ Aprobado</span></td>
+            <td><span class="pill pill-amber">En curso</span></td>
+            <td><span class="pill pill-amber">Pendiente</span></td>
+            <td><span class="pill pill-red">⛔ Bloqueado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── VIEW: BÓVEDA ─── -->
+  <div class="view" id="view-boveda">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">// PILAR 2 · ALMACENAMIENTO SEGURO</div>
+        <div class="page-title">Bóveda Segura de Datos</div>
+        <div class="page-subtitle">AWS S3 cifrado · acceso por rol · escaneo automático</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Archivos almacenados</div>
+        <div class="stat-value blue">284</div>
+        <div class="stat-sub">HV, contratos, evaluaciones</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Escaneados (hoy)</div>
+        <div class="stat-value green">17</div>
+        <div class="stat-sub">0 amenazas detectadas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cifrado</div>
+        <div class="stat-value green" style="font-size:18px">AES-256</div>
+        <div class="stat-sub">en reposo y en tránsito</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Amenazas bloqueadas</div>
+        <div class="stat-value amber">2</div>
+        <div class="stat-sub">este mes · archivos eliminados</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Control de Acceso por Rol (RBAC)</div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Rol</th><th>HV</th><th>Eval. Psic.</th><th>Nómina</th><th>Contrato</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:var(--text-primary);font-weight:600">Psicólogo</td>
+              <td><span class="pill pill-green">Leer</span></td>
+              <td><span class="pill pill-green">Leer/Editar</span></td>
+              <td><span class="pill pill-red">Denegado</span></td>
+              <td><span class="pill pill-red">Denegado</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-primary);font-weight:600">Nómina</td>
+              <td><span class="pill pill-red">Denegado</span></td>
+              <td><span class="pill pill-red">Denegado</span></td>
+              <td><span class="pill pill-green">Leer/Editar</span></td>
+              <td><span class="pill pill-green">Leer</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-primary);font-weight:600">Reclutador</td>
+              <td><span class="pill pill-green">Leer</span></td>
+              <td><span class="pill pill-red">Denegado</span></td>
+              <td><span class="pill pill-red">Denegado</span></td>
+              <td><span class="pill pill-red">Denegado</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-primary);font-weight:600">Admin RR.HH.</td>
+              <td><span class="pill pill-green">Total</span></td>
+              <td><span class="pill pill-green">Total</span></td>
+              <td><span class="pill pill-green">Total</span></td>
+              <td><span class="pill pill-green">Total</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Archivos Recientes</div>
+        </div>
+        <div class="log-row">
+          <div class="log-time">09/06 10:41</div>
+          <div class="log-event">HV_SebastianTorres.pdf <span class="pill pill-green" style="margin-left:6px">✓ Limpio</span></div>
+        </div>
+        <div class="log-row">
+          <div class="log-time">09/06 09:30</div>
+          <div class="log-event">EvalPsicologica_LGomez.pdf <span class="pill pill-green" style="margin-left:6px">✓ Limpio</span></div>
+        </div>
+        <div class="log-row">
+          <div class="log-time">08/06 16:10</div>
+          <div class="log-event">HV_AnonimoTest.docx <span class="pill pill-red" style="margin-left:6px">⛔ Bloqueado</span></div>
+        </div>
+        <div class="log-row">
+          <div class="log-time">07/06 11:00</div>
+          <div class="log-event">Contrato_MVarigas_Draft.pdf <span class="pill pill-green" style="margin-left:6px">✓ Limpio</span></div>
+        </div>
+        <div class="log-row">
+          <div class="log-time">06/06 09:15</div>
+          <div class="log-event">HV_CarlosPrada.pdf <span class="pill pill-amber" style="margin-left:6px">⏳ En cola</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIEW: AUDITORÍA ─── -->
+  <div class="view" id="view-auditoria">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">// TRAZABILIDAD · LEY 1581</div>
+        <div class="page-title">Log de Auditoría</div>
+        <div class="page-subtitle">Registro inmutable de quién, cuándo y para qué se accedió a datos</div>
+      </div>
+      <button class="btn btn-secondary">↓ Exportar CSV</button>
+    </div>
+
+    <div class="alert alert-success">
+      <span class="alert-icon">✅</span>
+      <div class="alert-text"><strong>Cumplimiento Habeas Data:</strong> Cada acceso queda registrado automáticamente. Este log no puede ser editado ni eliminado por ningún usuario.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Últimos 50 eventos</div>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" placeholder="Buscar por usuario o evento..." style="width:220px;font-size:12px;padding:6px 10px">
+          <select class="form-input" style="width:140px;font-size:12px;padding:6px 10px">
+            <option>Todos los tipos</option>
+            <option>Acceso a archivo</option>
+            <option>Modificación</option>
+            <option>Login</option>
+            <option>Export</option>
+          </select>
+        </div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">09/06/26 10:41:05</div>
+        <div class="log-event">Archivo HV_SebastianTorres.pdf — Visualización completa</div>
+        <div class="log-user">hrmanager</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">09/06/26 09:30:17</div>
+        <div class="log-event">EvalPsicologica_LGomez.pdf — Descarga autorizada</div>
+        <div class="log-user">cpsicologia</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">09/06/26 09:15:42</div>
+        <div class="log-event">Intento acceso Nómina_Dic2025.xlsx — <span style="color:var(--red)">Denegado (Rol insuficiente)</span></div>
+        <div class="log-user">recruiter01</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">09/06/26 08:50:01</div>
+        <div class="log-event">Vacante "Backend Senior" publicada en SPE vía API</div>
+        <div class="log-user">hrmanager</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">08/06/26 17:30:55</div>
+        <div class="log-event">Login exitoso desde IP 190.xxx.xx.xx — Bogotá, CO</div>
+        <div class="log-user">cpsicologia</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">08/06/26 16:10:33</div>
+        <div class="log-event">Archivo bloqueado por malware — HV_AnonimoTest.docx eliminado</div>
+        <div class="log-user">sistema</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">08/06/26 14:02:12</div>
+        <div class="log-event">Módulo 02 "Contraseñas" completado — puntuación 92%</div>
+        <div class="log-user">storres</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time">07/06/26 11:00:44</div>
+        <div class="log-event">Contrato_MVarigas_Draft.pdf subido — escaneo OK</div>
+        <div class="log-user">hrmanager</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIEW: APIs ─── -->
+  <div class="view" id="view-api">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">// PILAR 1 · INTEROPERABILIDAD</div>
+        <div class="page-title">Integraciones API REST</div>
+        <div class="page-subtitle">SPE (Servicio Público de Empleo) · SENA · Validador Antecedentes</div>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:24px">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏛️ SPE — Empleo.gov.co</div>
+          <span class="pill pill-green">Online</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;line-height:1.6">
+          Publica vacantes y recibe candidatos calificados directamente del portal gubernamental.
+        </div>
+        <div class="log-row" style="padding:6px 0">
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-dim)">Última sync</div>
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--green)">hace 12 min</div>
+        </div>
+        <div class="log-row" style="padding:6px 0">
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-dim)">Candidatos recibidos</div>
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-primary)">34 este mes</div>
+        </div>
+        <button class="btn btn-secondary" style="font-size:11px;width:100%;justify-content:center;margin-top:12px">Sincronizar ahora</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🎓 SENA</div>
+          <span class="pill pill-green">Online</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;line-height:1.6">
+          Valida certificaciones técnicas y recibe candidatos con formación SENA.
+        </div>
+        <div class="log-row" style="padding:6px 0">
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-dim)">Última sync</div>
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--green)">hace 28 min</div>
+        </div>
+        <div class="log-row" style="padding:6px 0">
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-dim)">Certs. validadas</div>
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-primary)">19 este mes</div>
+        </div>
+        <button class="btn btn-secondary" style="font-size:11px;width:100%;justify-content:center;margin-top:12px">Sincronizar ahora</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🔍 Validador Antecedentes</div>
+          <span class="pill pill-amber">Limitado</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;line-height:1.6">
+          Consulta automática de antecedentes judiciales con autorización firmada del candidato.
+        </div>
+        <div class="log-row" style="padding:6px 0">
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-dim)">Cuota mensual</div>
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--amber)">67 / 100 usadas</div>
+        </div>
+        <div class="log-row" style="padding:6px 0">
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-dim)">Resultado hoy</div>
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-primary)">4 sin novedad</div>
+        </div>
+        <button class="btn btn-secondary" style="font-size:11px;width:100%;justify-content:center;margin-top:12px">Ver configuración</button>
+      </div>
+    </div>
+
+    <!-- API Log -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Log de Peticiones API</div></div>
+      <div class="log-row">
+        <div class="log-time" style="color:var(--green)">200 OK</div>
+        <div class="log-event">POST /spe/vacantes — Backend Senior publicada</div>
+        <div class="log-user">09/06 08:50</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time" style="color:var(--green)">200 OK</div>
+        <div class="log-event">GET /spe/candidatos?vacante=backend — 8 nuevos</div>
+        <div class="log-user">09/06 08:51</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time" style="color:var(--green)">200 OK</div>
+        <div class="log-event">GET /sena/certificados?cc=1234567890 — 3 certs validadas</div>
+        <div class="log-user">09/06 09:00</div>
+      </div>
+      <div class="log-row">
+        <div class="log-time" style="color:var(--red)">429</div>
+        <div class="log-event">GET /antecedentes — Rate limit alcanzado, reintento en 60s</div>
+        <div class="log-user">08/06 16:45</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIEW: REPORTES ─── -->
+  <div class="view" id="view-reportes">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">// ANALÍTICA · GESTIÓN RR.HH.</div>
+        <div class="page-title">Reportes y Analítica</div>
+        <div class="page-subtitle">Métricas de selección, seguridad y cumplimiento</div>
+      </div>
+      <button class="btn btn-secondary">↓ Exportar PDF</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Tiempo promedio contratación</div>
+        <div class="stat-value blue" style="font-size:22px">18 días</div>
+        <div class="stat-trend trend-down">▼ -4 días vs trimestre anterior</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Fuente más efectiva</div>
+        <div class="stat-value green" style="font-size:18px">SPE</div>
+        <div class="stat-sub">68% de contrataciones</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Costo por contratación</div>
+        <div class="stat-value" style="font-size:18px;color:var(--text-primary)">$0</div>
+        <div class="stat-sub">vs $850K modelo anterior</div>
+        <div class="stat-trend trend-up">▼ Ahorro total: $5.1M COP</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Score seguridad equipo</div>
+        <div class="stat-value green">72 / 100</div>
+        <div class="stat-trend trend-up">▲ +12 pts este trimestre</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Efectividad por Fuente</div></div>
+        <div class="progress-bar-row">
+          <div class="progress-label"><span>SPE</span><span style="color:var(--green);font-weight:700">68%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:68%;background:var(--green)"></div></div>
+        </div>
+        <div class="progress-bar-row">
+          <div class="progress-label"><span>SENA</span><span style="color:var(--blue);font-weight:700">22%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:22%;background:var(--blue)"></div></div>
+        </div>
+        <div class="progress-bar-row">
+          <div class="progress-label"><span>Portal Directo</span><span style="color:var(--text-dim);font-weight:700">10%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:10%;background:var(--border-bright)"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Cumplimiento de Inducción</div></div>
+        <div class="progress-bar-row">
+          <div class="progress-label"><span>Módulo 1 — Phishing</span><span style="color:var(--green);font-weight:700">89%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:89%;background:var(--green)"></div></div>
+        </div>
+        <div class="progress-bar-row">
+          <div class="progress-label"><span>Módulo 2 — Contraseñas</span><span style="color:var(--green);font-weight:700">84%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:84%;background:var(--green)"></div></div>
+        </div>
+        <div class="progress-bar-row">
+          <div class="progress-label"><span>Módulo 3 — Privacidad</span><span style="color:var(--amber);font-weight:700">61%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:61%;background:var(--amber)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ─── MODALS ─── -->
+
+<!-- Role Selector -->
+<div class="modal-overlay" id="modal-role" onclick="closeModal('modal-role')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">🔑 Cambiar Vista de Rol</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px">El sistema filtra la información visible según el rol del usuario autenticado (RBAC).</p>
+    <div class="form-grid">
+      <button class="btn btn-primary" onclick="setRole('Admin RR.HH.')">Admin RR.HH. — Acceso total</button>
+      <button class="btn btn-secondary" onclick="setRole('Reclutador')">Reclutador — Solo vacantes y HV</button>
+      <button class="btn btn-secondary" onclick="setRole('Psicólogo')">Psicólogo — Evaluaciones</button>
+      <button class="btn btn-secondary" onclick="setRole('Nómina')">Nómina — Solo contratos</button>
+      <button class="btn btn-secondary" onclick="setRole('Candidato')">Candidato — Portal público</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Vacancy Modal -->
+<div class="modal-overlay" id="modal-vacancy" onclick="closeModal('modal-vacancy')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">+ Nueva Vacante</div>
+    <div class="form-grid form-grid-2" style="margin-bottom:16px">
+      <div class="form-group">
+        <label class="form-label">Título del cargo *</label>
+        <input class="form-input" placeholder="Ej: Desarrollador Frontend">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Departamento</label>
+        <select class="form-input">
+          <option>Ingeniería</option><option>Seguridad TI</option>
+          <option>RR.HH.</option><option>Gerencia</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Modalidad</label>
+        <select class="form-input">
+          <option>Remoto</option><option>Presencial</option><option>Híbrido</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo contrato</label>
+        <select class="form-input">
+          <option>Término indefinido</option><option>Término fijo</option>
+          <option>Prestación de servicios</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label class="form-label">Descripción del cargo *</label>
+      <textarea class="form-input" rows="3" placeholder="Responsabilidades, requisitos, perfil buscado..."></textarea>
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label class="form-label">Habilidades clave (separadas por coma)</label>
+      <input class="form-input" placeholder="Python, Django, REST APIs, Docker">
+    </div>
+    <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:16px;font-size:12px;color:var(--text-secondary)">
+      ⚡ Al publicar, esta vacante se sincronizará automáticamente con <strong style="color:var(--text-primary)">SPE</strong> y <strong style="color:var(--text-primary)">SENA</strong> en los próximos 30 minutos.
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-vacancy')">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-vacancy');alert('✅ Vacante publicada y en cola de sincronización con SPE/SENA')">Publicar Vacante</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Candidate Modal -->
+<div class="modal-overlay" id="modal-candidate" onclick="closeModal('modal-candidate')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">+ Registrar Candidato</div>
+    <div class="form-grid form-grid-2" style="margin-bottom:16px">
+      <div class="form-group">
+        <label class="form-label">Nombre completo *</label>
+        <input class="form-input" placeholder="Nombre Apellido">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo electrónico *</label>
+        <input class="form-input" placeholder="candidato@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vacante</label>
+        <select class="form-input">
+          <option>Backend Senior</option><option>Ciberseguridad</option>
+          <option>Psicólogo Org.</option><option>Líder TI</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fuente</label>
+        <select class="form-input">
+          <option>SPE</option><option>SENA</option><option>Portal directo</option><option>Referido</option>
+        </select>
+      </div>
+    </div>
+    <div class="upload-zone" style="margin-bottom:16px">
+      <div class="upload-icon">📎</div>
+      <div class="upload-text">Adjuntar Hoja de Vida</div>
+      <div class="upload-subtext">PDF o DOCX · Máx 10MB · Escaneo automático de malware</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-candidate')">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-candidate');alert('✅ Candidato registrado. HV en cola de escaneo de seguridad.')">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quiz Modal -->
+<div class="modal-overlay" id="modal-quiz" onclick="closeModal('modal-quiz')">
+  <div class="modal" onclick="event.stopPropagation()" style="width:580px">
+    <div style="font-size:10px;font-family:var(--font-mono);color:var(--blue);letter-spacing:.1em;margin-bottom:6px">MÓDULO 01 · PREGUNTA 2 DE 5</div>
+    <div class="modal-title">🎮 Evaluación: Phishing y Malware</div>
+
+    <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;font-size:13px;color:var(--text-secondary);line-height:1.6">
+      Recibes un correo del "Banco XYZ" indicando que tu cuenta fue bloqueada y debes ingresar a <strong style="color:var(--text-primary)">http://bancoxyz-seguro.ru/login</strong> para desbloquearla en las próximas 2 horas o perderás acceso.
+      <br><br><strong style="color:var(--text-primary)">¿Cuál es la acción correcta?</strong>
+    </div>
+
+    <div class="quiz-option" id="q-a" onclick="selectQuiz('q-a','wrong')">
+      <div class="quiz-letter">A</div>
+      Ingresar al enlace rápidamente para evitar que se cierre la cuenta
+    </div>
+    <div class="quiz-option" id="q-b" onclick="selectQuiz('q-b','wrong')">
+      <div class="quiz-letter">B</div>
+      Reenviar el correo a compañeros para advertirles
+    </div>
+    <div class="quiz-option" id="q-c" onclick="selectQuiz('q-c','correct')">
+      <div class="quiz-letter">C</div>
+      Reportar el correo al equipo de seguridad TI y eliminarlo sin hacer clic en ningún enlace
+    </div>
+    <div class="quiz-option" id="q-d" onclick="selectQuiz('q-d','wrong')">
+      <div class="quiz-letter">D</div>
+      Llamar al banco por el número que viene en el correo
+    </div>
+
+    <div id="quiz-feedback" style="display:none;margin-top:16px"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-quiz')">Salir del módulo</button>
+      <button class="btn btn-primary" id="quiz-next" style="display:none" onclick="closeModal('modal-quiz');alert('✅ ¡Correcto! Progreso guardado. Continúa con la siguiente pregunta.')">Siguiente pregunta →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Navigation
+  function showView(id, item) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+    document.getElementById('view-'+id).classList.add('active');
+    if(item) item.classList.add('active');
+    else {
+      // find matching sidebar item
+      document.querySelectorAll('.sidebar-item').forEach(s => {
+        if(s.getAttribute('onclick') && s.getAttribute('onclick').includes("'"+id+"'")) {
+          s.classList.add('active');
+        }
+      });
+    }
+  }
+
+  // Modals
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    // reset quiz
+    if(id === 'modal-quiz') resetQuiz();
+  }
+  function showRoleModal() {
+    openModal('modal-role');
+  }
+  function setRole(role) {
+    document.getElementById('role-label').textContent = role;
+    closeModal('modal-role');
+    if(role === 'Candidato') showView('portal', null);
+  }
+
+  // Quiz
+  function selectQuiz(id, result) {
+    document.querySelectorAll('.quiz-option').forEach(o => {
+      o.classList.remove('selected','correct','wrong');
+    });
+    const el = document.getElementById(id);
+    el.classList.add(result);
+    const correct = document.getElementById('q-c');
+    if(result === 'wrong') correct.classList.add('correct');
+    
+    const fb = document.getElementById('quiz-feedback');
+    fb.style.display = 'block';
+    if(result === 'correct') {
+      fb.innerHTML = '<div class="alert alert-success"><span class="alert-icon">✅</span><div class="alert-text"><strong>¡Correcto!</strong> Los correos de phishing suelen usar dominios similares pero distintos (.ru, .net, etc.) y crean urgencia artificial. Siempre reporta y nunca hagas clic.</div></div>';
+    } else {
+      fb.innerHTML = '<div class="alert alert-warn"><span class="alert-icon">⚠</span><div class="alert-text"><strong>Incorrecto.</strong> La respuesta correcta es C. Nunca interactúes con el enlace. Reporta el intento al equipo de seguridad TI para que quede registrado.</div></div>';
+    }
+    document.getElementById('quiz-next').style.display = 'inline-flex';
+  }
+
+  function resetQuiz() {
+    document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected','correct','wrong'));
+    document.getElementById('quiz-feedback').style.display = 'none';
+    document.getElementById('quiz-next').style.display = 'none';
+  }
+</script>
+</body>
+</html>

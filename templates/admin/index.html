@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Administración{% endblock %}
+{% block page_title %}Administración{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.nuevo_usuario') }}" class="btn btn-primary btn-sm">+ Nuevo usuario</a>
+{% endblock %}
+{% block content %}
+
+<!-- Tabla de usuarios -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-header">
+    <span class="card-title">Usuarios del sistema ({{ usuarios|length }})</span>
+    <a href="{{ url_for('admin.nuevo_usuario') }}" class="btn btn-primary btn-sm">+ Nuevo</a>
+  </div>
+  <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <thead>
+      <tr style="border-bottom:1px solid var(--border);">
+        <th style="padding:10px 16px; text-align:left; color:var(--text-muted); font-weight:500;">Nombre</th>
+        <th style="padding:10px 16px; text-align:left; color:var(--text-muted); font-weight:500;">Email</th>
+        <th style="padding:10px 16px; text-align:left; color:var(--text-muted); font-weight:500;">Rol</th>
+        <th style="padding:10px 16px; text-align:left; color:var(--text-muted); font-weight:500;">Estado</th>
+        <th style="padding:10px 16px; text-align:left; color:var(--text-muted); font-weight:500;">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in usuarios %}
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:10px 16px; color:var(--text);">{{ u.nombre }}</td>
+        <td style="padding:10px 16px; color:var(--text-dim);">{{ u.email }}</td>
+        <td style="padding:10px 16px;">
+          <span class="badge {% if u.rol.nombre == 'admin' %}badge-green{% elif u.rol.nombre == 'rrhh' %}badge-blue{% else %}badge-gray{% endif %}">
+            {{ u.rol.nombre }}
+          </span>
+        </td>
+        <td style="padding:10px 16px;">
+          <span class="badge {{ 'badge-green' if u.activo else 'badge-gray' }}">
+            {{ 'Activo' if u.activo else 'Inactivo' }}
+          </span>
+        </td>
+        <td style="padding:10px 16px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <!-- Activar/Desactivar -->
+            {% if u.id != current_user.id %}
+            <form method="POST" action="{{ url_for('admin.toggle_usuario', id=u.id) }}" style="display:inline;">
+              <button type="submit" class="btn btn-secondary btn-sm"
+                onclick="return confirm('¿{{ 'Desactivar' if u.activo else 'Activar' }} a {{ u.nombre }}?')">
+                {{ 'Desactivar' if u.activo else 'Activar' }}
+              </button>
+            </form>
+            {% endif %}
+            <!-- Reset password -->
+            <button class="btn btn-secondary btn-sm"
+              onclick="document.getElementById('pwd-{{ u.id }}').style.display='block'">
+              🔑 Contraseña
+            </button>
+          </div>
+          <!-- Formulario reset password (oculto) -->
+          <div id="pwd-{{ u.id }}" style="display:none; margin-top:8px;">
+            <form method="POST" action="{{ url_for('admin.reset_password', id=u.id) }}"
+              style="display:flex; gap:6px; align-items:center;">
+              <input type="password" name="nueva_password" placeholder="Nueva contraseña (mín. 8)"
+                class="form-control" style="max-width:200px; font-size:12px; padding:5px 8px;">
+              <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+              <button type="button" class="btn btn-secondary btn-sm"
+                onclick="document.getElementById('pwd-{{ u.id }}').style.display='none'">✕</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Log de actividad -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Actividad reciente</span>
+    <a href="{{ url_for('admin.auditoria') }}" class="btn btn-secondary btn-sm">Ver completo</a>
+  </div>
+  {% for log in logs %}
+  <div class="log-entry">
+    <div class="log-dot {{ 'error' if log.resultado == 'error' else ('warn' if log.resultado == 'denegado' else 'ok') }}"></div>
+    <span class="log-time">{{ log.fecha.strftime('%d/%m %H:%M') }}</span>
+    <span class="log-action">{{ log.accion }}</span>
+    <span class="log-desc">{{ log.descripcion or '' }}</span>
+    {% if log.usuario %}
+    <span style="color:var(--text-muted); font-size:11px; flex-shrink:0;">{{ log.usuario.nombre.split()[0] }}</span>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="empty-state"><p>No hay actividad registrada.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

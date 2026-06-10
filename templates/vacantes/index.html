@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Vacantes{% endblock %}
+{% block page_title %}Gestión de Vacantes{% endblock %}
+{% block topbar_actions %}
+  {% if current_user.tiene_rol('admin','rrhh','reclutador') %}
+  <a href="{{ url_for('vacantes.nueva') }}" class="btn btn-primary btn-sm">+ Nueva vacante</a>
+  {% endif %}
+{% endblock %}
+{% block content %}
+{% if not vacantes %}
+<div class="empty-state">
+  <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+  <p>No hay vacantes registradas.<br>
+  {% if current_user.tiene_rol('admin','rrhh','reclutador') %}
+  <a href="{{ url_for('vacantes.nueva') }}">Crear la primera vacante</a>
+  {% endif %}
+  </p>
+</div>
+{% else %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Depto.</th>
+          <th>Modalidad</th>
+          <th>Candidatos</th>
+          <th>Estado</th>
+          <th>SPE/SENA</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for v in vacantes %}
+      <tr>
+        <td>
+          <a href="{{ url_for('vacantes.detalle', id=v.id) }}" style="color:var(--text); font-weight:500;">{{ v.titulo }}</a>
+          {% if v.habilidades_lista %}
+          <div style="margin-top:3px;">
+            {% for h in v.habilidades_lista[:3] %}
+            <span class="badge badge-gray" style="font-size:10px; margin-right:3px;">{{ h }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </td>
+        <td style="color:var(--text-dim);">{{ v.departamento or '—' }}</td>
+        <td>{{ v.modalidad or '—' }}</td>
+        <td><span class="mono" style="color:var(--blue);">{{ v.total_candidatos }}</span></td>
+        <td>
+          {% if v.estado == 'activa' %}
+          <span class="badge badge-green">Activa</span>
+          {% elif v.estado == 'pausada' %}
+          <span class="badge badge-yellow">Pausada</span>
+          {% else %}
+          <span class="badge badge-gray">Cerrada</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if v.publicada_spe %}<span class="badge badge-blue" style="font-size:10px; margin-right:3px;">SPE</span>{% endif %}
+          {% if v.publicada_sena %}<span class="badge badge-purple" style="font-size:10px;">SENA</span>{% endif %}
+          {% if not v.publicada_spe and not v.publicada_sena %}<span style="color:var(--text-muted); font-size:12px;">—</span>{% endif %}
+        </td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <a href="{{ url_for('vacantes.detalle', id=v.id) }}" class="btn btn-secondary btn-sm">Ver</a>
+            {% if current_user.tiene_rol('admin','rrhh','reclutador') %}
+            <a href="{{ url_for('vacantes.editar', id=v.id) }}" class="btn btn-secondary btn-sm">Editar</a>
+            <form method="POST" action="{{ url_for('vacantes.eliminar', id=v.id) }}" onsubmit="return confirm('¿Eliminar esta vacante?')">
+              <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

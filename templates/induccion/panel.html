@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Panel Inducción{% endblock %}
+{% block page_title %}Panel de Inducción{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Módulos de inducción ({{ modulos|length }})</span>
+  </div>
+  <div style="padding:0 24px 24px;">
+    {% for m in modulos %}
+    <div style="padding:16px; border:1px solid var(--border); border-radius:8px; margin-bottom:12px; background:var(--bg2);">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span style="font-size:12px; color:var(--green);">Módulo {{ m.numero }}</span>
+          <div style="font-weight:500; color:var(--text);">{{ m.titulo }}</div>
+          <div style="font-size:12px; color:var(--text-muted);">{{ m.duracion_min }} min · Mín {{ m.puntaje_minimo }}%</div>
+        </div>
+        <span class="badge {{ 'badge-green' if m.activo else 'badge-gray' }}">
+          {{ 'Activo' if m.activo else 'Inactivo' }}
+        </span>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>No hay módulos creados.</p></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

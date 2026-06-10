@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Nuevo usuario{% endblock %}
+{% block page_title %}Crear usuario{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('admin.index') }}" class="btn btn-secondary btn-sm">← Volver</a>
+{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;">
+  <div style="padding:28px;">
+    <p style="color:var(--text-muted); font-size:13px; margin-bottom:24px;">
+      Crea usuarios internos: psicólogo, nómina, reclutador, RRHH o admin.
+      Para candidatos usa el <a href="{{ url_for('candidatos.postular') }}" style="color:var(--blue);">portal público</a>.
+    </p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }}" style="margin-bottom:16px;">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:12px; color:var(--text-dim); margin-bottom:5px; font-weight:500;">
+          Nombre completo *
+        </label>
+        <input type="text" name="nombre" class="form-control" required
+          style="width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:9px 12px; color:var(--text); font-size:13px;">
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:12px; color:var(--text-dim); margin-bottom:5px; font-weight:500;">
+          Correo electrónico *
+        </label>
+        <input type="email" name="email" class="form-control" required
+          style="width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:9px 12px; color:var(--text); font-size:13px;">
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:12px; color:var(--text-dim); margin-bottom:5px; font-weight:500;">
+          Contraseña * (mínimo 8 caracteres)
+        </label>
+        <input type="password" name="password" class="form-control" required minlength="8"
+          style="width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:9px 12px; color:var(--text); font-size:13px;">
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <label style="display:block; font-size:12px; color:var(--text-dim); margin-bottom:5px; font-weight:500;">
+          Rol *
+        </label>
+        <select name="rol_id" required
+          style="width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:9px 12px; color:var(--text); font-size:13px;">
+          <option value="">-- Selecciona un rol --</option>
+          {% for rol in roles %}
+            {% if rol.nombre != 'candidato' %}
+            <option value="{{ rol.id }}">
+              {{ rol.nombre | upper }} — {{ rol.descripcion }}
+            </option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button type="submit" class="btn btn-primary">Crear usuario</button>
+        <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

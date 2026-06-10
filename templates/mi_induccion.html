@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Mis módulos{% endblock %}
+{% block page_title %}Módulos de Inducción{% endblock %}
+{% block content %}
+<div style="max-width:720px; margin:0 auto;">
+  {% if candidato and candidato.induccion_completa %}
+  <div class="alert alert-success" style="margin-bottom:24px; font-size:14px;">
+    🎉 ¡Felicitaciones! Completaste todos los módulos de inducción. Tu acceso corporativo será activado pronto.
+  </div>
+  {% endif %}
+
+  <div style="margin-bottom:24px;">
+    <h2 style="font-size:18px; font-weight:600; margin-bottom:6px;">Firewall Humano — Inducción en Ciberseguridad</h2>
+    <p style="font-size:13px; color:var(--text-muted); line-height:1.6;">
+      Debes completar y aprobar los 3 módulos en orden. Cada módulo incluye contenido educativo y un quiz final con puntaje mínimo del 70%.
+    </p>
+  </div>
+
+  {% for modulo in modulos %}
+  {% set progreso = progresos.get(modulo.id) %}
+  {% set aprobado = progreso and progreso.aprobado %}
+  {% set completado = progreso and progreso.completado %}
+  {% set iniciado = progreso and progreso.iniciado %}
+
+  {% set anterior_aprobado = true %}
+  {% if modulo.numero > 1 %}
+    {% set mod_ant = modulos[loop.index - 2] %}
+    {% set prog_ant = progresos.get(mod_ant.id) %}
+    {% set anterior_aprobado = prog_ant and prog_ant.aprobado %}
+  {% endif %}
+
+  <div class="card" style="margin-bottom:14px; {% if not anterior_aprobado %}opacity:.55;{% endif %}">
+    <div style="display:flex; align-items:flex-start; gap:16px;">
+      <div style="width:42px; height:42px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; font-family:'JetBrains Mono',monospace;
+        background:{{ 'rgba(34,197,94,.15)' if aprobado else ('rgba(245,158,11,.15)' if completado else 'rgba(59,130,246,.15)') }};
+        color:{{ '#22c55e' if aprobado else ('#f59e0b' if completado else '#3b82f6') }};">
+        {{ '✓' if aprobado else modulo.numero }}
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+          <span style="font-size:15px; font-weight:600;">{{ modulo.titulo }}</span>
+          {% if aprobado %}
+          <span class="badge badge-green">Aprobado{% if progreso.puntaje %} · {{ progreso.puntaje }}%{% endif %}</span>
+          {% elif completado %}
+          <span class="badge badge-yellow">Reprobado{% if progreso.puntaje %} · {{ progreso.puntaje }}%{% endif %}</span>
+          {% elif iniciado %}
+          <span class="badge badge-blue">En curso</span>
+          {% elif not anterior_aprobado %}
+          <span class="badge badge-gray">Bloqueado</span>
+          {% else %}
+          <span class="badge badge-gray">Pendiente</span>
+          {% endif %}
+        </div>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">{{ modulo.descripcion }}</p>
+        <div style="display:flex; align-items:center; gap:16px; font-size:12px; color:var(--text-muted);">
+          <span>⏱ {{ modulo.duracion_min }} min</span>
+          <span>📊 Mínimo {{ modulo.puntaje_minimo }}%</span>
+          {% if progreso and progreso.intentos %}
+          <span>🔄 {{ progreso.intentos }} intento{{ 's' if progreso.intentos > 1 }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if anterior_aprobado %}
+      <div>
+        {% if aprobado %}
+        <a href="{{ url_for('induccion.ver_modulo', modulo_id=modulo.id) }}" class="btn btn-secondary btn-sm">Revisar</a>
+        {% elif not anterior_aprobado %}
+        <button class="btn btn-secondary btn-sm" disabled>Bloqueado</button>
+        {% else %}
+        <a href="{{ url_for('induccion.ver_modulo', modulo_id=modulo.id) }}" class="btn btn-primary btn-sm">
+          {{ 'Reintentar' if completado else ('Continuar' if iniciado else 'Comenzar') }}
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div style="margin-top:20px; padding:16px; background:var(--bg2); border:1px solid var(--border); border-radius:8px; font-size:12px; color:var(--text-muted);">
+    🔒 El acceso a credenciales corporativas está condicionado a la aprobación de los 3 módulos. Tus resultados quedan registrados en el sistema de auditoría SISCC.
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}{{ vacante.titulo }}{% endblock %}
+{% block page_title %}Detalle de Vacante{% endblock %}
+
+{% block topbar_actions %}
+  {% if current_user.tiene_rol('admin','rrhh','reclutador') %}
+  <a href="{{ url_for('vacantes.editar', id=vacante.id) }}" class="btn btn-secondary btn-sm">Editar</a>
+  <form method="POST" action="{{ url_for('vacantes.eliminar', id=vacante.id) }}"
+        onsubmit="return confirm('¿Eliminar esta vacante?')" style="display:inline;">
+    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+  </form>
+  {% endif %}
+  <a href="{{ url_for('vacantes.index') }}" class="btn btn-secondary btn-sm">← Volver</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-2" style="align-items:start;">
+
+  {# ── Columna izquierda: info principal ── #}
+  <div>
+
+    {# Cabecera #}
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px;">
+        <div>
+          <h1 style="font-size:20px; font-weight:700; margin-bottom:8px;">{{ vacante.titulo }}</h1>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            {% if vacante.estado == 'activa' %}
+              <span class="badge badge-green">Activa</span>
+            {% elif vacante.estado == 'pausada' %}
+              <span class="badge badge-yellow">Pausada</span>
+            {% else %}
+              <span class="badge badge-gray">Cerrada</span>
+            {% endif %}
+
+            {% if vacante.modalidad %}
+              <span class="badge badge-blue">{{ vacante.modalidad }}</span>
+            {% endif %}
+            {% if vacante.tipo_contrato %}
+              <span class="badge badge-gray">{{ vacante.tipo_contrato }}</span>
+            {% endif %}
+            {% if vacante.publicada_spe %}
+              <span class="badge badge-blue" style="font-size:10px;">SPE</span>
+            {% endif %}
+            {% if vacante.publicada_sena %}
+              <span class="badge badge-purple" style="font-size:10px;">SENA</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if not current_user.tiene_rol('psicologo') and (vacante.salario_min or vacante.salario_max) %}
+        <div style="text-align:right; flex-shrink:0;">
+          <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px;">Salario</div>
+          <div style="font-size:15px; font-weight:700; color:var(--green); font-family:'JetBrains Mono',monospace;">
+            {% if vacante.salario_min %}${{ '{:,}'.format(vacante.salario_min) }}{% endif %}
+            {% if vacante.salario_min and vacante.salario_max %} — {% endif %}
+            {% if vacante.salario_max %}${{ '{:,}'.format(vacante.salario_max) }}{% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        {% if vacante.departamento %}
+        <div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px;">Departamento</div>
+          <div style="font-size:13px; color:var(--text-dim);">{{ vacante.departamento }}</div>
+        </div>
+        {% endif %}
+        <div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px;">Candidatos</div>
+          <div style="font-size:13px; color:var(--blue); font-family:'JetBrains Mono',monospace; font-weight:600;">{{ vacante.total_candidatos }}</div>
+        </div>
+        <div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px;">Creada</div>
+          <div style="font-size:13px; color:var(--text-dim);">
+            {{ vacante.fecha_creacion.strftime('%d/%m/%Y') if vacante.fecha_creacion else '—' }}
+          </div>
+        </div>
+        {% if vacante.fecha_cierre %}
+        <div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px;">Cierre</div>
+          <div style="font-size:13px; color:var(--text-dim);">{{ vacante.fecha_cierre.strftime('%d/%m/%Y') }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Descripción #}
+    {% if vacante.descripcion %}
+    <div class="card" style="margin-bottom:16px;">
+      <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px;">Descripción del cargo</div>
+      <p style="font-size:13px; color:var(--text-dim); line-height:1.7; white-space:pre-wrap;">{{ vacante.descripcion }}</p>
+    </div>
+    {% endif %}
+
+    {# Requisitos #}
+    {% if vacante.requisitos %}
+    <div class="card" style="margin-bottom:16px;">
+      <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px;">Requisitos</div>
+      <p style="font-size:13px; color:var(--text-dim); line-height:1.7; white-space:pre-wrap;">{{ vacante.requisitos }}</p>
+    </div>
+    {% endif %}
+
+    {# Habilidades #}
+    {% if vacante.habilidades_lista %}
+    <div class="card">
+      <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px;">Habilidades requeridas</div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        {% for h in vacante.habilidades_lista %}
+        <span class="badge badge-blue" style="font-size:12px; padding:4px 12px;">{{ h }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  {# ── Columna derecha: candidatos ── #}
+  <div>
+
+    {# Lista de candidatos #}
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Candidatos ({{ vacante.total_candidatos }})</span>
+        {% if current_user.tiene_rol('admin','rrhh','reclutador') %}
+        <a href="{{ url_for('candidatos.index') }}?vacante={{ vacante.id }}" class="btn btn-secondary btn-sm">Ver todos</a>
+        {% endif %}
+      </div>
+
+      {% if vacante.candidatos %}
+        {% for c in vacante.candidatos %}
+        <div style="border-bottom:1px solid var(--border); padding:12px 0; {% if loop.last %}border-bottom:none;{% endif %}">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:34px; height:34px; border-radius:50%; background:var(--bg3);
+                        border:1px solid var(--border); display:flex; align-items:center;
+                        justify-content:center; font-size:14px; font-weight:700;
+                        color:var(--green); flex-shrink:0;">
+              {{ c.nombre[0].upper() }}
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:13px; font-weight:500; color:var(--text);">{{ c.nombre }}</div>
+              <div style="font-size:12px; color:var(--text-muted);">{{ c.email }}</div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+              {% set colores = {
+                'recibido':'badge-blue','prefiltro':'badge-yellow','evaluacion':'badge-yellow',
+                'entrevista':'badge-yellow','seleccionado':'badge-green','induccion':'badge-purple',
+                'activo':'badge-green','rechazado':'badge-red'
+              } %}
+              <span class="badge {{ colores.get(c.estado, 'badge-gray') }}" style="font-size:10px;">{{ c.estado }}</span>
+              {% if c.score %}
+              <span style="font-size:11px; color:var(--text-muted); font-family:'JetBrains Mono',monospace;">{{ c.score }}/100</span>
+              {% endif %}
+            </div>
+          </div>
+          {% if current_user.tiene_rol('admin','rrhh','reclutador','psicologo') %}
+          <div style="margin-top:8px; padding-left:44px;">
+            <a href="{{ url_for('candidatos.detalle', id=c.id) }}" class="btn btn-secondary btn-sm">Ver perfil</a>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state" style="padding:24px;">
+          <p>No hay candidatos para esta vacante aún.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

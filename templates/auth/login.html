@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SISCC — Iniciar Sesión</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#080c10;--bg2:#0f1419;--bg3:#161d26;--border:#1e2d3d;--green:#22c55e;--blue:#3b82f6;--red:#ef4444;--text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+    .auth-wrap { width:100%; max-width:400px; padding:24px; }
+    .auth-logo { text-align:center; margin-bottom:32px; }
+    .logo-mark { font-family:'JetBrains Mono',monospace; font-size:26px; color:var(--green); letter-spacing:-1px; }
+    .logo-sub { font-size:11px; color:var(--text-muted); letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+    .auth-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:32px; }
+    .auth-title { font-size:18px; font-weight:600; margin-bottom:4px; }
+    .auth-sub { font-size:13px; color:var(--text-muted); margin-bottom:24px; }
+    .form-group { margin-bottom:16px; }
+    .form-label { display:block; font-size:12px; font-weight:500; color:var(--text-dim); margin-bottom:6px; }
+    .form-control { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:10px 12px; color:var(--text); font-size:13px; font-family:'Inter',sans-serif; outline:none; transition:border-color .15s; }
+    .form-control:focus { border-color:var(--blue); }
+    .btn { width:100%; padding:11px; background:var(--green); color:#000; border:none; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer; transition:background .15s; font-family:'Inter',sans-serif; margin-top:4px; }
+    .btn:hover { background:#16a34a; }
+    .auth-footer { text-align:center; margin-top:20px; font-size:13px; color:var(--text-muted); }
+    .auth-footer a { color:var(--blue); }
+    .alert { padding:10px 14px; border-radius:6px; margin-bottom:16px; font-size:13px; border-left:3px solid; }
+    .alert-danger { background:rgba(239,68,68,.1); border-color:var(--red); color:#fca5a5; }
+    .form-check { display:flex; align-items:center; gap:8px; }
+    .form-check input { accent-color:var(--green); }
+    .form-check label { font-size:13px; color:var(--text-muted); }
+    .divider { display:flex; align-items:center; gap:12px; margin:20px 0; color:var(--text-muted); font-size:12px; }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+  </style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-logo">
+    <div class="logo-mark">SISCC</div>
+    <div class="logo-sub">Sistema Integral de Selección y Concientización</div>
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-title">Iniciar sesión</div>
+    <div class="auth-sub">Accede al panel de gestión de talento humano</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}">{{ msg }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" name="email" class="form-control" placeholder="usuario@empresa.co" required autofocus>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+      <div class="form-check" style="margin-bottom:20px;">
+        <input type="checkbox" name="remember" id="remember">
+        <label for="remember">Mantener sesión iniciada</label>
+      </div>
+      <button type="submit" class="btn">Ingresar al sistema</button>
+    </form>
+
+    <div class="divider">o</div>
+    <div style="text-align:center; font-size:13px; color:var(--text-muted);">
+      ¿Eres candidato? <a href="/candidatos/postular">Postúlate aquí</a>
+    </div>
+  </div>
+
+  <div class="auth-footer">
+    ¿No tienes cuenta? <a href="/auth/registro">Crear cuenta</a>
+  </div>
+
+  <div style="text-align:center; margin-top:28px; font-size:11px; color:var(--text-muted);">
+    🔒 Acceso protegido — Ley 1581 Habeas Data · Todos los accesos son auditados
+  </div>
+</div>
+</body>
+</html>

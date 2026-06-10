@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SISCC — Crear cuenta</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#080c10;--bg2:#0f1419;--bg3:#161d26;--border:#1e2d3d;--green:#22c55e;--blue:#3b82f6;--red:#ef4444;--text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;}
+    .wrap{width:100%;max-width:420px;padding:24px;}
+    .logo-mark{font-family:'JetBrains Mono',monospace;font-size:22px;color:var(--green);text-align:center;margin-bottom:24px;}
+    .card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;}
+    .title{font-size:17px;font-weight:600;margin-bottom:4px;}
+    .sub{font-size:13px;color:var(--text-muted);margin-bottom:22px;}
+    .form-group{margin-bottom:14px;}
+    .form-label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:5px;}
+    .form-control{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;}
+    .form-control:focus{border-color:var(--blue);}
+    .btn{width:100%;padding:10px;background:var(--green);color:#000;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;margin-top:6px;}
+    .alert{padding:9px 13px;border-radius:6px;margin-bottom:14px;font-size:13px;border-left:3px solid;}
+    .alert-danger{background:rgba(239,68,68,.1);border-color:var(--red);color:#fca5a5;}
+    .footer{text-align:center;margin-top:18px;font-size:13px;color:var(--text-muted);}
+    .footer a{color:var(--blue);}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo-mark">SISCC</div>
+  <div class="card">
+    <div class="title">Crear cuenta de candidato</div>
+    <div class="sub">Regístrate para postularte a nuestras vacantes</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}">{{ msg }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label class="form-label">Nombre completo</label>
+        <input type="text" name="nombre" class="form-control" value="{{ form_data.nombre if form_data else '' }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" name="email" class="form-control" value="{{ form_data.email if form_data else '' }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña (mínimo 8 caracteres)</label>
+        <input type="password" name="password" class="form-control" minlength="8" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmar contraseña</label>
+        <input type="password" name="confirmar" class="form-control" required>
+      </div>
+      <button type="submit" class="btn">Crear cuenta</button>
+    </form>
+  </div>
+  <div class="footer">¿Ya tienes cuenta? <a href="/auth/login">Iniciar sesión</a></div>
+</div>
+</body>
+</html>

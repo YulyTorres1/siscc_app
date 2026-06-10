@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}{{ modulo.titulo }}{% endblock %}
+{% block page_title %}Módulo {{ modulo.numero }}: {{ modulo.titulo }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{{ url_for('induccion.mi_induccion') }}" class="btn btn-secondary btn-sm">← Volver</a>
+{% endblock %}
+{% block content %}
+<div class="card" style="margin-bottom:24px;">
+  <div style="padding:24px;">
+    <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">⏱ {{ modulo.duracion_min }} min estimados</div>
+    <div style="line-height:1.7; color:var(--text-dim);">
+      {{ modulo.contenido_html | safe }}
+    </div>
+  </div>
+</div>
+
+{% if preguntas %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Quiz de evaluación</span>
+    <span style="font-size:12px; color:var(--text-muted);">Mínimo {{ modulo.puntaje_minimo }}% para aprobar</span>
+  </div>
+  <form method="POST" action="{{ url_for('induccion.submit_quiz', modulo_id=modulo.id) }}" style="padding:0 24px 24px;">
+    {% for p in preguntas %}
+    <div style="margin-bottom:24px; padding:16px; background:var(--bg2); border-radius:8px; border:1px solid var(--border);">
+      <p style="font-weight:500; margin-bottom:12px; color:var(--text);">{{ loop.index }}. {{ p.pregunta }}</p>
+      {% for letra, texto in [('a', p.opcion_a), ('b', p.opcion_b), ('c', p.opcion_c), ('d', p.opcion_d)] %}
+      <label style="display:flex; align-items:flex-start; gap:10px; margin-bottom:8px; cursor:pointer; color:var(--text-dim); font-size:13px;">
+        <input type="radio" name="pregunta_{{ p.id }}" value="{{ letra }}" required style="margin-top:2px; accent-color:var(--green);">
+        <span><strong style="color:var(--text);">{{ letra.upper() }}.</strong> {{ texto }}</span>
+      </label>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Enviar respuestas</button>
+  </form>
+</div>
+{% else %}
+<div class="card">
+  <div style="padding:24px; text-align:center;">
+    <p style="color:var(--text-muted);">Este módulo no tiene quiz. Puedes marcarlo como completado.</p>
+    <form method="POST" action="{{ url_for('induccion.submit_quiz', modulo_id=modulo.id) }}">
+      <button type="submit" class="btn btn-primary">Marcar como completado</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

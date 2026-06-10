@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Auditoría{% endblock %}
+{% block page_title %}Log de Auditoría{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Todos los eventos ({{ logs|length }})</span>
+  </div>
+  {% for log in logs %}
+  <div class="log-entry">
+    <div class="log-dot {{ 'error' if log.resultado == 'error' else ('warn' if log.resultado == 'denegado' else 'ok') }}"></div>
+    <span class="log-time">{{ log.fecha.strftime('%d/%m/%Y %H:%M') }}</span>
+    <span class="log-action">{{ log.accion }}</span>
+    <span class="log-desc">{{ log.descripcion or '' }}</span>
+    <span style="color:var(--text-muted); font-size:11px;">{{ log.ip }}</span>
+    {% if log.usuario %}
+    <span style="color:var(--text-muted); font-size:11px; flex-shrink:0;">{{ log.usuario.nombre }}</span>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="empty-state"><p>No hay actividad registrada.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

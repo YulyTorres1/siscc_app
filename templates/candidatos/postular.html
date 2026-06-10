@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SISCC — Portal de Postulación</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#080c10;--bg2:#0f1419;--bg3:#161d26;--border:#1e2d3d;--green:#22c55e;--blue:#3b82f6;--red:#ef4444;--yellow:#f59e0b;--text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    .hero{background:linear-gradient(to bottom,#0f1419,var(--bg));border-bottom:1px solid var(--border);padding:48px 24px 40px;text-align:center;}
+    .hero-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+    .hero-title{font-size:clamp(24px,5vw,38px);font-weight:700;margin-bottom:10px;line-height:1.2;}
+    .hero-sub{font-size:15px;color:var(--text-dim);max-width:540px;margin:0 auto 24px;line-height:1.6;}
+    .hero-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    .hero-badge{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--text-dim);}
+    .container{max-width:900px;margin:0 auto;padding:36px 24px;}
+    .section-title{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;}
+    .vacantes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:36px;}
+    .vacante-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;transition:border-color .2s;}
+    .vacante-card:hover{border-color:#3b82f6;}
+    .vacante-titulo{font-size:14px;font-weight:600;margin-bottom:6px;}
+    .vacante-meta{font-size:12px;color:var(--text-muted);margin-bottom:8px;}
+    .vacante-tags{display:flex;flex-wrap:wrap;gap:5px;}
+    .tag{background:var(--bg3);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--text-dim);}
+    .form-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:32px;}
+    .form-title{font-size:18px;font-weight:600;margin-bottom:4px;}
+    .form-sub{font-size:13px;color:var(--text-muted);margin-bottom:24px;}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .form-group{margin-bottom:14px;}
+    .form-label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:5px;font-weight:500;}
+    .form-control{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;}
+    .form-control:focus{border-color:var(--blue);}
+    textarea.form-control{resize:vertical;min-height:80px;}
+    .consent-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px;}
+    .consent-title{font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+    .consent-text{font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:10px;}
+    .form-check{display:flex;align-items:flex-start;gap:8px;}
+    .form-check input{accent-color:var(--green);margin-top:2px;}
+    .form-check label{font-size:13px;color:var(--text-dim);}
+    .btn-submit{width:100%;padding:13px;background:var(--green);color:#000;border:none;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;font-family:'Inter',sans-serif;}
+    .btn-submit:hover{background:#16a34a;}
+    .alert{padding:11px 15px;border-radius:6px;margin-bottom:16px;font-size:13px;border-left:3px solid;}
+    .alert-success{background:rgba(34,197,94,.1);border-color:var(--green);color:#86efac;}
+    .alert-danger{background:rgba(239,68,68,.1);border-color:var(--red);color:#fca5a5;}
+    .footer{text-align:center;padding:24px;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);margin-top:32px;}
+    @media(max-width:600px){.grid-2{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">SISCC · Portal de Empleo</div>
+  <h1 class="hero-title">Únete a nuestro equipo</h1>
+  <p class="hero-sub">Proceso de selección transparente, seguro y en cumplimiento de la Ley 1581 de Habeas Data.</p>
+  <div class="hero-badges">
+    <span class="hero-badge">🔒 Datos protegidos · Ley 1581</span>
+    <span class="hero-badge">✅ Proceso digitalizado</span>
+    <span class="hero-badge">🎓 Inducción obligatoria incluida</span>
+  </div>
+</div>
+
+<div class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+  <div class="alert alert-{{ cat }}">{{ msg }}</div>
+  {% endfor %}
+  {% endwith %}
+
+  {% if vacantes %}
+  <div class="section-title">Vacantes disponibles</div>
+  <div class="vacantes-grid">
+    {% for v in vacantes %}
+    <div class="vacante-card">
+      <div class="vacante-titulo">{{ v.titulo }}</div>
+      <div class="vacante-meta">
+        {% if v.departamento %}{{ v.departamento }} · {% endif %}
+        {% if v.modalidad %}{{ v.modalidad }} · {% endif %}
+        {% if v.tipo_contrato %}{{ v.tipo_contrato }}{% endif %}
+      </div>
+      {% if v.habilidades_lista %}
+      <div class="vacante-tags">
+        {% for h in v.habilidades_lista[:4] %}<span class="tag">{{ h }}</span>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="form-card">
+    <div class="form-title">Formulario de postulación</div>
+    <div class="form-sub">Completa todos los campos. Tu información está protegida bajo nuestra política de privacidad.</div>
+
+    <form method="POST" enctype="multipart/form-data">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Nombre completo *</label>
+          <input type="text" name="nombre" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Correo electrónico *</label>
+          <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input type="tel" name="telefono" class="form-control" placeholder="+57 300...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de documento</label>
+          <select name="tipo_documento" class="form-control">
+            <option value="CC">Cédula de Ciudadanía (CC)</option>
+            <option value="CE">Cédula de Extranjería (CE)</option>
+            <option value="PA">Pasaporte</option>
+            <option value="TI">Tarjeta de Identidad (TI)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Número de documento</label>
+          <input type="text" name="documento" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vacante de interés</label>
+          <select name="vacante_id" class="form-control">
+            <option value="">Vacante general / Sin especificar</option>
+            {% for v in vacantes %}
+            <option value="{{ v.id }}">{{ v.titulo }}{% if v.departamento %} — {{ v.departamento }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Perfil profesional / Resumen</label>
+        <textarea name="perfil" class="form-control" placeholder="Cuéntanos brevemente tu experiencia y por qué eres el candidato ideal..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Hoja de vida (PDF, DOCX, máx. 10 MB)</label>
+        <input type="file" name="hv_archivo" class="form-control" accept=".pdf,.doc,.docx">
+      </div>
+
+      <!-- Consentimientos -->
+      <div class="consent-box">
+        <div class="consent-title">🔒 Tratamiento de datos personales (Habeas Data)</div>
+        <div class="consent-text">
+          De conformidad con la <strong>Ley 1581 de 2012</strong> y el Decreto 1377 de 2013, al enviar este formulario autorizas a la empresa para recolectar, almacenar, utilizar y circular tus datos personales con el fin exclusivo de llevar a cabo el proceso de selección. Tienes derecho a conocer, actualizar, rectificar y suprimir tu información en cualquier momento contactando a nuestro responsable de datos. Los datos serán tratados de forma confidencial y no serán compartidos con terceros sin tu autorización.
+        </div>
+        <div class="form-check">
+          <input type="checkbox" name="habeas_data" id="hd" required>
+          <label for="hd">Acepto el tratamiento de mis datos personales según la política de privacidad y la Ley 1581. <strong style="color:#fca5a5;">(Requerido)</strong></label>
+        </div>
+      </div>
+
+      <div class="consent-box">
+        <div class="consent-title">🎓 Módulo de inducción en ciberseguridad</div>
+        <div class="consent-text">
+          Como parte del proceso de selección, deberás completar <strong>3 módulos de inducción obligatorios</strong> sobre ciberseguridad (Phishing y Malware, Gestión de Contraseñas, Privacidad y Habeas Data). La aprobación de estos módulos con un puntaje mínimo del 70% es <strong>requisito previo</strong> para recibir tus credenciales de acceso corporativo.
+        </div>
+        <div class="form-check">
+          <input type="checkbox" name="acepta_induccion" id="ind">
+          <label for="ind">Entiendo y acepto completar los módulos de inducción como parte del proceso.</label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit">Enviar postulación →</button>
+    </form>
+  </div>
+</div>
+
+<div class="footer">
+  SISCC — Sistema Integral de Selección y Concientización · Todos los datos son auditados · Ley 1581 Colombia
+  <br><a href="/auth/login" style="color:var(--blue);">Acceso interno RR.HH.</a>
+</div>
+
+</body>
+</html>

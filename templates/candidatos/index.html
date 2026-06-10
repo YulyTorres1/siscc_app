@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Candidatos{% endblock %}
+{% block page_title %}Candidatos{% endblock %}
+{% block content %}
+
+<!-- Filtros -->
+<div class="card" style="margin-bottom:16px; padding:14px 20px;">
+  <form method="GET" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    <input type="text" name="q" value="{{ busqueda }}" class="form-control" placeholder="Buscar nombre o email..." style="max-width:240px;">
+    <select name="estado" class="form-control" style="max-width:160px;">
+      <option value="">Todos los estados</option>
+      {% for e in estados %}
+      <option value="{{ e }}" {{ 'selected' if estado_filtro == e }}>{{ e.capitalize() }}</option>
+      {% endfor %}
+    </select>
+    <select name="fuente" class="form-control" style="max-width:140px;">
+      <option value="">Todas las fuentes</option>
+      {% for f in ['portal','spe','sena','referido'] %}
+      <option value="{{ f }}" {{ 'selected' if fuente_filtro == f }}>{{ f.upper() }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-secondary btn-sm">Filtrar</button>
+    {% if busqueda or estado_filtro or fuente_filtro %}
+    <a href="{{ url_for('candidatos.index') }}" class="btn btn-secondary btn-sm">✕ Limpiar</a>
+    {% endif %}
+  </form>
+</div>
+
+{% if not candidatos %}
+<div class="empty-state">
+  <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+  <p>No se encontraron candidatos con esos filtros.</p>
+</div>
+{% else %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Candidato</th>
+          <th>Vacante</th>
+          <th>Fuente</th>
+          <th>Estado</th>
+          <th>HV</th>
+          <th>Inducción</th>
+          <th>Postulación</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in candidatos %}
+      {% set estado_colors = {'recibido':'badge-gray','prefiltro':'badge-blue','evaluacion':'badge-yellow','entrevista':'badge-purple','seleccionado':'badge-green','induccion':'badge-blue','activo':'badge-green','rechazado':'badge-red'} %}
+      <tr>
+        <td>
+          <div style="font-weight:500;">{{ c.nombre }}</div>
+          <div style="font-size:11px; color:var(--text-muted);">{{ c.email }}</div>
+        </td>
+        <td style="font-size:12px; color:var(--text-dim);">
+          {% if c.vacante %}{{ c.vacante.titulo[:30] }}{% else %}—{% endif %}
+        </td>
+        <td><span class="badge badge-gray" style="font-size:10px;">{{ c.fuente.upper() }}</span></td>
+        <td><span class="badge {{ estado_colors.get(c.estado,'badge-gray') }}">{{ c.estado }}</span></td>
+        <td>
+          {% if c.hv_archivo %}
+            {% if c.hv_limpia %}<span title="Limpia" style="color:var(--green);">✓</span>
+            {% elif c.hv_escaneada %}<span title="Escaneando" style="color:var(--yellow);">⏳</span>
+            {% else %}<span title="Pendiente" style="color:var(--text-muted);">📄</span>{% endif %}
+          {% else %}
+          <span style="color:var(--text-muted);">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if c.induccion_completa %}
+          <span style="color:var(--green);">✓ Completa</span>
+          {% else %}
+          <span style="color:var(--text-muted); font-size:12px;">Pendiente</span>
+          {% endif %}
+        </td>
+        <td style="font-size:11px; color:var(--text-muted);">{{ c.fecha_postulacion.strftime('%d/%m/%Y') }}</td>
+        <td><a href="{{ url_for('candidatos.detalle', id=c.id) }}" class="btn btn-secondary btn-sm">Ver</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

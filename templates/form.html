@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar' if vacante else 'Nueva' }} Vacante{% endblock %}
+{% block page_title %}{{ 'Editar vacante' if vacante else 'Nueva vacante' }}{% endblock %}
+{% block content %}
+<div style="max-width:700px; margin:0 auto;">
+  <div class="card">
+    <form method="POST">
+      <div class="grid grid-2">
+        <div class="form-group">
+          <label class="form-label">Título del cargo *</label>
+          <input type="text" name="titulo" class="form-control" value="{{ vacante.titulo if vacante else '' }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Departamento</label>
+          <input type="text" name="departamento" class="form-control" value="{{ vacante.departamento if vacante else '' }}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Descripción del cargo *</label>
+        <textarea name="descripcion" class="form-control" rows="4" required>{{ vacante.descripcion if vacante else '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Requisitos</label>
+        <textarea name="requisitos" class="form-control" rows="3">{{ vacante.requisitos if vacante else '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Habilidades técnicas <span style="color:var(--text-muted); font-size:11px;">(separadas por coma)</span></label>
+        <input type="text" name="habilidades" class="form-control" placeholder="Python, SQL, Excel..." value="{{ vacante.habilidades if vacante else '' }}">
+      </div>
+
+      <div class="grid grid-2">
+        <div class="form-group">
+          <label class="form-label">Modalidad</label>
+          <select name="modalidad" class="form-control">
+            <option value="">Seleccionar...</option>
+            {% for m in ['Presencial','Remoto','Híbrido'] %}
+            <option value="{{ m }}" {{ 'selected' if vacante and vacante.modalidad == m else '' }}>{{ m }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de contrato</label>
+          <select name="tipo_contrato" class="form-control">
+            <option value="">Seleccionar...</option>
+            {% for t in ['Término indefinido','Término fijo','Obra o labor','Prestación de servicios','Aprendizaje SENA'] %}
+            <option value="{{ t }}" {{ 'selected' if vacante and vacante.tipo_contrato == t else '' }}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="form-group">
+          <label class="form-label">Salario mínimo (COP)</label>
+          <input type="number" name="salario_min" class="form-control" value="{{ vacante.salario_min if vacante else '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Salario máximo (COP)</label>
+          <input type="number" name="salario_max" class="form-control" value="{{ vacante.salario_max if vacante else '' }}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Fecha de cierre</label>
+        <input type="date" name="fecha_cierre" class="form-control" value="{{ vacante.fecha_cierre.strftime('%Y-%m-%d') if vacante and vacante.fecha_cierre else '' }}">
+      </div>
+
+      {% if vacante %}
+      <div class="form-group">
+        <label class="form-label">Estado de la vacante</label>
+        <select name="estado" class="form-control">
+          {% for e in ['activa','pausada','cerrada'] %}
+          <option value="{{ e }}" {{ 'selected' if vacante.estado == e else '' }}>{{ e.capitalize() }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+
+      <div style="display:flex; gap:12px; margin-bottom:4px;">
+        <div class="form-check">
+          <input type="checkbox" name="publicar_spe" id="spe" {{ 'checked' if vacante and vacante.publicada_spe else '' }}>
+          <label for="spe">Publicar en SPE (Servicio Público de Empleo)</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" name="publicar_sena" id="sena" {{ 'checked' if vacante and vacante.publicada_sena else '' }}>
+          <label for="sena">Publicar en SENA</label>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button type="submit" class="btn btn-primary">{{ 'Guardar cambios' if vacante else 'Crear vacante' }}</button>
+        <a href="{{ url_for('vacantes.index') }}" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
