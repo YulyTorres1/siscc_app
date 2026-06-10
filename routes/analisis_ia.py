@@ -1,14 +1,13 @@
 """
 SISCC — Análisis IA de candidatos
 Compara la HV + perfil del candidato contra los requisitos de la vacante
-usando la API de Google Gemini (gratuita).
+usando la API de Groq (gratuita, sin tarjeta de crédito).
 """
 import os
 import json
 import traceback
 import urllib.request
 import urllib.error
-from datetime import datetime
 from flask import Blueprint, jsonify, current_app
 from flask_login import login_required, current_user
 from app import db
@@ -57,13 +56,13 @@ def extraer_texto_hv(filepath):
         except Exception as e:
             texto = f"[No se pudo leer el DOCX: {e}]"
 
-    return texto.strip()[:6000]  # máx 6000 chars para no saturar el prompt
+    return texto.strip()[:6000]
 
 
-# ── Llamada a Google Gemini API (gratuita) ────────────────────────────────────
+# ── Llamada a Groq API (gratuita) ─────────────────────────────────────────────
 def analizar_con_claude(candidato, vacante, texto_hv):
     """
-    Llama a Google Gemini y devuelve un dict con:
+    Llama a Groq (llama-3.3-70b) y devuelve un dict con:
     {
       "score": 0-100,
       "veredicto": "CUMPLE" | "CUMPLE PARCIALMENTE" | "NO CUMPLE",
@@ -72,11 +71,11 @@ def analizar_con_claude(candidato, vacante, texto_hv):
       "resumen": "texto corto"
     }
     """
-    api_key = os.environ.get('GEMINI_API_KEY') or current_app.config.get('GEMINI_API_KEY')
+    api_key = os.environ.get('GROQ_API_KEY') or current_app.config.get('GROQ_API_KEY')
     if not api_key:
-        raise ValueError("GEMINI_API_KEY no configurada en el .env")
+        raise ValueError("GROQ_API_KEY no configurada en el .env")
 
-    # Construir el prompt con toda la información disponible
+    # Construir el prompt
     perfil_candidato = []
     if candidato.perfil:
         perfil_candidato.append(f"Presentación del candidato:\n{candidato.perfil}")
@@ -112,30 +111,35 @@ Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin bloque
 
 Criterios para el score:
 - 80-100: Cumple todos o casi todos los requisitos
-- 50-79: Cumple parcialmente, tiene potencial pero le faltan elementos clave  
+- 50-79: Cumple parcialmente, tiene potencial pero le faltan elementos clave
 - 0-49: No cumple los requisitos mínimos
 
 Si no hay suficiente información en la HV, indica en brechas que falta información y da un score conservador."""
 
-    # Payload para Gemini API
     payload = json.dumps({
-        "contents": [
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
             {
-                "parts": [{"text": prompt}]
+                "role": "system",
+                "content": "Eres un experto en selección de personal. Respondes SOLO con JSON válido, sin texto adicional ni bloques de código."
+            },
+            {
+                "role": "user",
+                "content": prompt
             }
         ],
-        "generationConfig": {
-            "temperature": 0.2,
-            "maxOutputTokens": 1000
-        }
+        "temperature": 0.2,
+        "max_tokens": 1000,
+        "response_format": {"type": "json_object"}
     }).encode('utf-8')
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-
     req = urllib.request.Request(
-        url,
+        "https://api.groq.com/openai/v1/chat/completions",
         data=payload,
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        },
         method="POST"
     )
 
@@ -144,19 +148,17 @@ Si no hay suficiente información en la HV, indica en brechas que falta informac
             data = json.loads(resp.read().decode('utf-8'))
     except urllib.error.HTTPError as e:
         error_body = e.read().decode('utf-8')
-        raise Exception(f"Error Gemini API ({e.code}): {error_body}")
+        raise Exception(f"Error Groq API ({e.code}): {error_body}")
 
-    # Extraer texto de la respuesta Gemini
+    # Extraer texto de la respuesta
     try:
-        raw = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-    except (KeyError, IndexError) as e:
-        raise Exception(f"Respuesta inesperada de Gemini: {data}")
+        raw = data["choices"][0]["message"]["content"].strip()
+    except (KeyError, IndexError):
+        raise Exception(f"Respuesta inesperada de Groq: {data}")
 
-    # Limpiar posibles backticks si el modelo los incluye
     raw = raw.replace('```json', '').replace('```', '').strip()
     resultado = json.loads(raw)
 
-    # Validar campos mínimos
     resultado.setdefault('score', 0)
     resultado.setdefault('veredicto', 'NO CUMPLE')
     resultado.setdefault('fortalezas', [])
@@ -177,7 +179,6 @@ def analizar(id):
     if not vacante:
         return jsonify({'error': 'El candidato no tiene vacante asignada'}), 400
 
-    # Extraer texto de la HV si existe
     texto_hv = ""
     if candidato.hv_archivo:
         upload_folder = current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
@@ -193,8 +194,6 @@ def analizar(id):
         traceback.print_exc()
         return jsonify({'error': f'Error al analizar: {str(e)}'}), 500
 
-    # Guardar resultado como evaluación tipo 'ia_screening'
-    # Primero eliminar análisis previo si existe
     Evaluacion.query.filter_by(
         candidato_id=candidato.id,
         tipo='ia_screening'
@@ -211,7 +210,6 @@ def analizar(id):
     )
     db.session.add(eval_ia)
 
-    # Actualizar score general del candidato con el resultado IA
     candidato.score = resultado['score']
     db.session.commit()
 
