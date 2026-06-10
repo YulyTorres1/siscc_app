@@ -13,6 +13,8 @@ services:
         fromDatabase:
           name: siscc-db
           property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false
 
 databases:
   - name: siscc-db
