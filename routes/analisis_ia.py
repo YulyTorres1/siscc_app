@@ -1,11 +1,13 @@
 """
 SISCC — Análisis IA de candidatos
 Compara la HV + perfil del candidato contra los requisitos de la vacante
-usando la API de Anthropic (Claude).
+usando la API de Google Gemini (gratuita).
 """
 import os
 import json
 import traceback
+import urllib.request
+import urllib.error
 from datetime import datetime
 from flask import Blueprint, jsonify, current_app
 from flask_login import login_required, current_user
@@ -58,10 +60,10 @@ def extraer_texto_hv(filepath):
     return texto.strip()[:6000]  # máx 6000 chars para no saturar el prompt
 
 
-# ── Llamada a Claude API ──────────────────────────────────────────────────────
+# ── Llamada a Google Gemini API (gratuita) ────────────────────────────────────
 def analizar_con_claude(candidato, vacante, texto_hv):
     """
-    Llama a Claude y devuelve un dict con:
+    Llama a Google Gemini y devuelve un dict con:
     {
       "score": 0-100,
       "veredicto": "CUMPLE" | "CUMPLE PARCIALMENTE" | "NO CUMPLE",
@@ -70,13 +72,9 @@ def analizar_con_claude(candidato, vacante, texto_hv):
       "resumen": "texto corto"
     }
     """
-    import anthropic
-
-    api_key = os.environ.get('ANTHROPIC_API_KEY') or current_app.config.get('ANTHROPIC_API_KEY')
+    api_key = os.environ.get('GEMINI_API_KEY') or current_app.config.get('GEMINI_API_KEY')
     if not api_key:
-        raise ValueError("ANTHROPIC_API_KEY no configurada en el .env")
-
-    client = anthropic.Anthropic(api_key=api_key)
+        raise ValueError("GEMINI_API_KEY no configurada en el .env")
 
     # Construir el prompt con toda la información disponible
     perfil_candidato = []
@@ -119,13 +117,41 @@ Criterios para el score:
 
 Si no hay suficiente información en la HV, indica en brechas que falta información y da un score conservador."""
 
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=1000,
-        messages=[{"role": "user", "content": prompt}]
+    # Payload para Gemini API
+    payload = json.dumps({
+        "contents": [
+            {
+                "parts": [{"text": prompt}]
+            }
+        ],
+        "generationConfig": {
+            "temperature": 0.2,
+            "maxOutputTokens": 1000
+        }
+    }).encode('utf-8')
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST"
     )
 
-    raw = message.content[0].text.strip()
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8')
+        raise Exception(f"Error Gemini API ({e.code}): {error_body}")
+
+    # Extraer texto de la respuesta Gemini
+    try:
+        raw = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except (KeyError, IndexError) as e:
+        raise Exception(f"Respuesta inesperada de Gemini: {data}")
+
     # Limpiar posibles backticks si el modelo los incluye
     raw = raw.replace('```json', '').replace('```', '').strip()
     resultado = json.loads(raw)
