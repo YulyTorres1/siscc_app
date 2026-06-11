@@ -140,7 +140,7 @@ Si no hay suficiente información en la HV, indica en brechas que falta informac
                 }
             ],
             temperature=0.2,
-            max_tokens=1000
+            max_tokens=1000,
             response_format={"type": "json_object"}
         )
 
