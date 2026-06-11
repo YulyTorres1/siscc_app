@@ -72,6 +72,14 @@ def analizar_con_claude(candidato, vacante, texto_hv):
     }
     """
     api_key = os.environ.get('GROQ_API_KEY') or current_app.config.get('GROQ_API_KEY')
+    
+    print("=" * 50)
+    print("GROQ_API_KEY encontrada:", bool(api_key))
+    if api_key:
+        print("Inicio:", api_key[:8])
+        print("Longitud:", len(api_key))
+    print("=" * 50)
+
     if not api_key:
         raise ValueError("GROQ_API_KEY no configurada en el .env")
 
