@@ -117,7 +117,7 @@ Criterios para el score:
 Si no hay suficiente información en la HV, indica en brechas que falta información y da un score conservador."""
 
     payload = json.dumps({
-        "model": "llama-3.3-70b-versatile",
+        "model": "llama3-8b-8192",
         "messages": [
             {
                 "role": "system",
@@ -130,7 +130,6 @@ Si no hay suficiente información en la HV, indica en brechas que falta informac
         ],
         "temperature": 0.2,
         "max_tokens": 1000,
-        "response_format": {"type": "json_object"}
     }).encode('utf-8')
 
     req = urllib.request.Request(
