@@ -6,12 +6,12 @@ usando la API de Groq (gratuita, sin tarjeta de crédito).
 import os
 import json
 import traceback
-import urllib.request
-import urllib.error
+from groq import Groq
 from flask import Blueprint, jsonify, current_app
 from flask_login import login_required, current_user
 from app import db
 from models import Candidato, Evaluacion
+
 
 analisis_bp = Blueprint('analisis', __name__)
 
@@ -124,44 +124,31 @@ Criterios para el score:
 
 Si no hay suficiente información en la HV, indica en brechas que falta información y da un score conservador."""
 
-    payload = json.dumps({
-        "model": "llama3-8b-8192",
-        "messages": [
-            {
-                "role": "system",
-                "content": "Eres un experto en selección de personal. Respondes SOLO con JSON válido, sin texto adicional ni bloques de código."
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        "temperature": 0.2,
-        "max_tokens": 1000,
-    }).encode('utf-8')
-
-    req = urllib.request.Request(
-        "https://api.groq.com/openai/v1/chat/completions",
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
-        },
-        method="POST"
-    )
-
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode('utf-8'))
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode('utf-8')
-        raise Exception(f"Error Groq API ({e.code}): {error_body}")
+        client = Groq(api_key=api_key)
 
-    # Extraer texto de la respuesta
-    try:
-        raw = data["choices"][0]["message"]["content"].strip()
-    except (KeyError, IndexError):
-        raise Exception(f"Respuesta inesperada de Groq: {data}")
+        chat = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Eres un experto en selección de personal. Respondes SOLO con JSON válido."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.2,
+            max_tokens=1000
+            response_format={"type": "json_object"}
+        )
+
+        raw = chat.choices[0].message.content.strip()
+
+    except Exception as e:
+        raise Exception(f"Error Groq API: {str(e)}")
+
 
     raw = raw.replace('```json', '').replace('```', '').strip()
     resultado = json.loads(raw)
